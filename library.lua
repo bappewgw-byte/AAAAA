@@ -309,7 +309,7 @@ function Library.new(hubName, gameSubTitle)
         Visible = false,
         ZIndex = 100,
     }, ScreenGui)
-    New("UICorner", {CornerRadius = UDim.new(1, 0)}, ToggleBtn)
+    New("UICorner", {CornerRadius = UDim.new(0, 8)}, ToggleBtn)
     MakeDraggable(ToggleBtn, ToggleBtn)
 
     local CloseBtn = New("TextButton", {

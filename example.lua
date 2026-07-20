@@ -5,7 +5,7 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bappe
 -- ====================
 -- Global Config Table untuk menyimpan state
 local ConfigData = {}
-local ConfigFolder = "SaphireHub"
+local ConfigFolder = "Fernove Hub"
 
 -- Pastikan folder ada
 if isfolder and not isfolder(ConfigFolder) then
@@ -26,7 +26,7 @@ end
 
 -- ====================
 -- Window
-local Window = Library.new("Saphire", "Roblox")
+local Window = Library.new("Fernove", "Premium")
 -- =====================
 -- Category
 Window:AddCategory("Category")
@@ -78,8 +78,20 @@ Elements["MultiDrop1"] = ExampleCard:AddMultiDropdown("Multi Dropdown", {"Option
 end)
 
 -- Textbox
-ExampleCard:AddTextbox("Text", "Enter text...", function(txt)
+Elements["TextConfig"] = ExampleCard:AddTextbox("Example Text", "Enter text...", function(txt)
     print("Input:", txt)
+end)
+
+Elements["DelayConfig"] = ExampleCard:AddTextbox("Example Delay", "Masukkan angka...", function(txt)
+    local angkaDelay = tonumber(txt)
+
+    if angkaDelay then
+        print("Anda memasukkan angka yang valid:", angkaDelay)
+        -- Anda bisa memakai angkaDelay untuk logika script Anda
+        -- Contoh: task.wait(angkaDelay)
+    else
+        warn("Input yang dimasukkan bukan sekadar angka!")
+    end
 end)
 
 -- Label
@@ -155,6 +167,11 @@ ConfigCard:AddButton("Load Config", function()
             if decoded["MultiDrop1"] ~= nil and Elements["MultiDrop1"] then
                 -- Method :Set() bawaan dari UI akan menata ulang UI centangnya
                 Elements["MultiDrop1"]:Set(decoded["MultiDrop1"])
+            end
+
+            if decoded["DelayConfig"] ~= nil and Elements["DelayConfig"] then
+                -- Method :Set() bawaan dari UI akan menata ulang UI centangnya
+                Elements["DelayConfig"]:Set(decoded["DelayConfig"])
             end
 
             Window:Notify("Config", "Berhasil memuat: " .. SelectedConfig, 3, "check-circle")
