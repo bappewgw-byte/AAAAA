@@ -300,6 +300,68 @@ function Library.new(hubName, gameSubTitle)
         Camera:GetPropertyChangedSignal("ViewportSize"):Connect(UpdateScale)
     end
 
+    local ToggleBtn = New("ImageButton", {
+        Name = "ToggleBtn",
+        Size = UDim2.new(0, 50, 0, 50),
+        Position = UDim2.new(0, 20, 0, 20),
+        BackgroundColor3 = Color3.fromRGB(20, 20, 22),
+        Image = "rbxassetid://127242944781300",
+        Visible = false,
+        ZIndex = 100,
+    }, ScreenGui)
+    New("UICorner", {CornerRadius = UDim.new(1, 0)}, ToggleBtn)
+    MakeDraggable(ToggleBtn, ToggleBtn)
+
+    local CloseBtn = New("TextButton", {
+        Name = "CloseBtn",
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(1, -34, 0, 10),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 35),
+        Text = "",
+        ZIndex = 10,
+    }, MainFrame)
+    New("UICorner", {CornerRadius = UDim.new(0, 6)}, CloseBtn)
+    New("ImageLabel", {
+        Size = UDim2.new(0, 14, 0, 14),
+        Position = UDim2.new(0.5, -7, 0.5, -7),
+        BackgroundTransparency = 1,
+        Image = Icons["x"] or "rbxassetid://7743878857",
+        ImageColor3 = Color3.fromRGB(220, 220, 220),
+        ZIndex = 11,
+    }, CloseBtn)
+
+    local MinimizeBtn = New("TextButton", {
+        Name = "MinimizeBtn",
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(1, -64, 0, 10),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 35),
+        Text = "",
+        ZIndex = 10,
+    }, MainFrame)
+    New("UICorner", {CornerRadius = UDim.new(0, 6)}, MinimizeBtn)
+    New("ImageLabel", {
+        Size = UDim2.new(0, 14, 0, 14),
+        Position = UDim2.new(0.5, -7, 0.5, -7),
+        BackgroundTransparency = 1,
+        Image = Icons["minus"] or "rbxassetid://7734000129",
+        ImageColor3 = Color3.fromRGB(220, 220, 220),
+        ZIndex = 11,
+    }, MinimizeBtn)
+
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        MainFrame.Visible = false
+        ToggleBtn.Visible = true
+    end)
+
+    ToggleBtn.MouseButton1Click:Connect(function()
+        ToggleBtn.Visible = false
+        MainFrame.Visible = true
+    end)
+
     -- Overlay layer for dropdown menus / notifications so nothing gets clipped
     -- by ScrollingFrames underneath
     local Overlay = New("Frame", {
@@ -348,12 +410,10 @@ function Library.new(hubName, gameSubTitle)
     }, HeaderCard)
     New("UICorner", {CornerRadius = UDim.new(0, 8)}, LogoBox)
 
-    New("TextLabel", {
-        Text = "Z",
-        Size = UDim2.new(1, 0, 1, 0),
-        TextColor3 = Color3.fromRGB(220, 220, 220),
-        Font = Enum.Font.GothamBold,
-        TextSize = 16,
+    New("ImageLabel", {
+        Image = "rbxassetid://127242944781300",
+        Size = UDim2.new(1, -8, 1, -8),
+        Position = UDim2.new(0, 4, 0, 4),
         BackgroundTransparency = 1,
     }, LogoBox)
 
@@ -405,38 +465,32 @@ function Library.new(hubName, gameSubTitle)
     }, Sidebar)
     New("UICorner", {CornerRadius = UDim.new(0, 8)}, FooterCard)
 
-    New("TextLabel", {
-        Text = "Sub expires in 23d",
-        Size = UDim2.new(1, -20, 0, 20),
-        Position = UDim2.new(0, 12, 0, 10),
-        TextColor3 = Color3.fromRGB(130, 130, 140),
-        Font = Enum.Font.Gotham,
-        TextSize = 11,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        BackgroundTransparency = 1,
+    local LocalPlayer = game.Players.LocalPlayer
+    local AvatarImg = New("ImageLabel", {
+        Size = UDim2.new(0, 42, 0, 42),
+        Position = UDim2.new(0, 9, 0.5, -21),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 35),
     }, FooterCard)
+    New("UICorner", {CornerRadius = UDim.new(1, 0)}, AvatarImg)
 
-    local SessionLbl = New("TextLabel", {
-        Text = "Session duration: 00:00",
-        Size = UDim2.new(1, -20, 0, 20),
-        Position = UDim2.new(0, 12, 0, 28),
-        TextColor3 = Color3.fromRGB(220, 220, 220),
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        BackgroundTransparency = 1,
-    }, FooterCard)
-
-    -- Session Timer
-    local startTime = os.time()
     task.spawn(function()
-        while task.wait(1) do
-            local elapsed = os.time() - startTime
-            local m = math.floor(elapsed / 60)
-            local s = elapsed % 60
-            SessionLbl.Text = string.format("Session duration: %d:%02d", m, s)
+        if LocalPlayer then
+            pcall(function()
+                AvatarImg.Image = game.Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+            end)
         end
     end)
+
+    New("TextLabel", {
+        Text = LocalPlayer and LocalPlayer.Name or "Player",
+        Size = UDim2.new(1, -60, 0, 20),
+        Position = UDim2.new(0, 60, 0.5, -10),
+        TextColor3 = Color3.fromRGB(220, 220, 220),
+        Font = Enum.Font.GothamBold,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, FooterCard)
 
     -- MAIN CONTENT (RIGHT)
     local MainContent = New("Frame", {
