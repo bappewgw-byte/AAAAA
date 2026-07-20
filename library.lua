@@ -566,6 +566,10 @@ function Library.new(hubName, gameSubTitle)
         end
     end)
 
+    self.SetScale = function(_, val)
+        Tween(UIScaleObj, {Scale = val}, 0.2)
+    end
+
     return self
 end
 
@@ -878,6 +882,10 @@ function Library:CreatePage(pageName, icon)
                     Text = "",
                 }, Frame)
                 New("UICorner", {CornerRadius = UDim.new(0, 4)}, Box)
+                
+                Box.MouseEnter:Connect(function() Tween(Box, {BackgroundColor3 = Color3.fromRGB(38, 38, 42)}, 0.15) end)
+                Box.MouseLeave:Connect(function() Tween(Box, {BackgroundColor3 = Color3.fromRGB(28, 28, 32)}, 0.15) end)
+
 
                 local Check = New("Frame", {
                     Size = UDim2.new(1, -4, 1, -4),
@@ -914,6 +922,9 @@ function Library:CreatePage(pageName, icon)
                     TextSize = 12,
                 }, Container)
                 New("UICorner", {CornerRadius = UDim.new(0, 6)}, Btn)
+                
+                Btn.MouseEnter:Connect(function() Tween(Btn, {BackgroundColor3 = Color3.fromRGB(34, 34, 38)}, 0.15) end)
+                Btn.MouseLeave:Connect(function() Tween(Btn, {BackgroundColor3 = Color3.fromRGB(24, 24, 28)}, 0.15) end)
                 Btn.MouseButton1Click:Connect(callback)
             end
 
@@ -1027,6 +1038,9 @@ function Library:CreatePage(pageName, icon)
                     AutoButtonColor = false,
                 }, Frame)
                 New("UICorner", {CornerRadius = UDim.new(0, 6)}, DropBtn)
+                
+                DropBtn.MouseEnter:Connect(function() Tween(DropBtn, {BackgroundColor3 = Color3.fromRGB(38, 38, 42)}, 0.15) end)
+                DropBtn.MouseLeave:Connect(function() Tween(DropBtn, {BackgroundColor3 = Color3.fromRGB(28, 28, 32)}, 0.15) end)
 
                 local SelectedLbl = New("TextLabel", {
                     Text = tostring(selected or "Select"),
@@ -1186,6 +1200,9 @@ function Library:CreatePage(pageName, icon)
                     AutoButtonColor = false,
                 }, Frame)
                 New("UICorner", {CornerRadius = UDim.new(0, 6)}, DropBtn)
+                
+                DropBtn.MouseEnter:Connect(function() Tween(DropBtn, {BackgroundColor3 = Color3.fromRGB(38, 38, 42)}, 0.15) end)
+                DropBtn.MouseLeave:Connect(function() Tween(DropBtn, {BackgroundColor3 = Color3.fromRGB(28, 28, 32)}, 0.15) end)
 
                 local SelectedLbl = New("TextLabel", {
                     Text = GetLabelText(),
