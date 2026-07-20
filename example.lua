@@ -36,9 +36,11 @@ local Page1 = Window:CreatePage("Home", "home")
 -- ====================
 -- Tabs Index
 local MenuSub1 = Page1:CreateSubTab("Tabs 1")
+local MenuSub2 = Page1:CreateSubTab("Tabs 2")
+local MenuSub3 = Page1:CreateSubTab("Tabs 3")
 -- ====================
 -- Card Container di dalam Combat Sub-Tab
-local ExampleCard = MenuSub1:CreateCard("Example", "target")
+local ExampleCard = MenuSub1:CreateCard("Example 1", "target")
 
 -- Table untuk menyimpan reference ke UI Elements agar bisa di-Set() saat Load Config
 local Elements = {}
@@ -66,7 +68,27 @@ Elements["Weapon"] = ExampleCard:AddDropdown("Weapon", {"Sword", "Bow", "Magic"}
     print("Weapon Selected:", selected)
 end)
 
--- ====================
+-- Dropdown Multi Select
+Elements["MultiDrop1"] = ExampleCard:AddMultiDropdown("Multi Dropdown", {"Option 1", "Option 2", "Option 3"}, {"Option 1"}, function(selected)
+    ConfigData["MultiDrop1"] = selected
+    print("Selected list:")
+    for _, v in ipairs(selected) do
+        print(" -", v)
+    end
+end)
+
+-- Textbox
+ExampleCard:AddTextbox("Text", "Enter text...", function(txt)
+    print("Input:", txt)
+end)
+
+-- Label
+ExampleCard:AddLabel("Status: Idle")
+
+local ExampleCard2 = MenuSub2:CreateCard("Example 2", "target")
+local ExampleCard3 = MenuSub3:CreateCard("Example 3", "target")
+
+-- ========================================================================
 -- Settings Page
 Window:AddCategory("Settings")
 local SettingsPage = Window:CreatePage("Settings", "settings")
@@ -113,20 +135,28 @@ ConfigCard:AddButton("Load Config", function()
         local HttpService = game:GetService("HttpService")
         local json = readfile(ConfigFolder .. "/" .. SelectedConfig .. ".json")
         local success, decoded = pcall(function() return HttpService:JSONDecode(json) end)
-        
+
         if success and decoded then
             -- Set data dari Config ke UI
             if decoded["AutoFarm"] ~= nil and Elements["AutoFarm"] then
                 Elements["AutoFarm"]:Set(decoded["AutoFarm"])
             end
+
             if decoded["FarmSpeed"] ~= nil and Elements["FarmSpeed"] then
-                -- Note: Library perlu support Set untuk Slider jika ingin auto update slider UI, 
+                -- Note: Library perlu support Set untuk Slider jika ingin auto update slider UI,
                 -- saat ini kita set manual callbacknya:
                 ConfigData["FarmSpeed"] = decoded["FarmSpeed"]
             end
+
             if decoded["Weapon"] ~= nil and Elements["Weapon"] then
                 Elements["Weapon"]:Set(decoded["Weapon"])
             end
+
+            if decoded["MultiDrop1"] ~= nil and Elements["MultiDrop1"] then
+                -- Method :Set() bawaan dari UI akan menata ulang UI centangnya
+                Elements["MultiDrop1"]:Set(decoded["MultiDrop1"])
+            end
+
             Window:Notify("Config", "Berhasil memuat: " .. SelectedConfig, 3, "check-circle")
         else
             Window:Notify("Error", "Gagal memuat Config", 3, "x")

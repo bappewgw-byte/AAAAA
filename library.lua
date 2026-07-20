@@ -1350,8 +1350,19 @@ function Library:CreatePage(pageName, icon)
             function Card:AddTextbox(text, placeholder, callback)
                 callback = callback or function() end
 
+                local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1}, Container)
+
+                New("TextLabel", {
+                    Text = text, Size = UDim2.new(0.45, 0, 1, 0),
+                    TextColor3 = Color3.fromRGB(180, 180, 190),
+                    Font = Enum.Font.Gotham, TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                }, Frame)
+
                 local Input = New("TextBox", {
-                    Size = UDim2.new(1, 0, 0, 28),
+                    Size = UDim2.new(0.5, 0, 0, 26),
+                    Position = UDim2.new(0.5, 0, 0.5, -13),
                     BackgroundColor3 = Color3.fromRGB(24, 24, 28),
                     PlaceholderText = placeholder or "Text",
                     Text = "",
@@ -1360,13 +1371,21 @@ function Library:CreatePage(pageName, icon)
                     TextSize = 11,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     ClearTextOnFocus = false,
-                }, Container)
+                }, Frame)
                 New("UICorner", {CornerRadius = UDim.new(0, 6)}, Input)
-                New("UIPadding", {PaddingLeft = UDim.new(0, 10)}, Input)
+                New("UIPadding", {PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8)}, Input)
 
                 Input.FocusLost:Connect(function(enter)
                     callback(Input.Text, enter)
                 end)
+
+                return {
+                    Set = function(_, newText)
+                        Input.Text = newText
+                        callback(newText, false)
+                    end,
+                    Get = function() return Input.Text end
+                }
             end
 
             -- LABEL (simple text row, useful for status readouts)
