@@ -19,6 +19,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local GuiService = game:GetService("GuiService")
+local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
 -- ========================================================
@@ -217,6 +218,26 @@ local function MakeResizable(frame, handle, minSize, maxSize)
             local newY = math.clamp(startSize.Y.Offset + delta.Y, minSize.Y, maxSize.Y)
             frame.Size = UDim2.new(0, newX, 0, newY)
         end
+    end)
+end
+
+-- Keeps `overlayFrame` (a dropdown's option list, living in the top-level
+-- Overlay layer) glued directly under `anchorButton` every frame while it's
+-- visible. Without this, dragging or resizing the window leaves the popup
+-- floating in its old screen position, disconnected from the button that
+-- opened it. Returns a connection; caller should :Disconnect() it on close.
+local function FollowAnchor(overlayFrame, anchorButton, optH)
+    return RunService.RenderStepped:Connect(function()
+        if not overlayFrame.Visible then return end
+        local abs = anchorButton.AbsolutePosition
+        local size = anchorButton.AbsoluteSize
+        local screenH = (Camera and Camera.ViewportSize.Y) or 720
+        local posY = abs.Y + size.Y + 4
+        if posY + optH > screenH and abs.Y - optH - 4 > 0 then
+            posY = abs.Y - optH - 4 -- flip upward if no room below
+        end
+        overlayFrame.Position = UDim2.new(0, abs.X, 0, posY)
+        overlayFrame.Size = UDim2.new(0, size.X, 0, optH)
     end)
 end
 
@@ -462,7 +483,34 @@ function Library.new(hubName, gameSubTitle)
     self.MainContent = MainContent
     self.PageTitle = PageTitle
     self.Pages = {}
-    self._openDropdown = nil -- tracks currently open dropdown so only one is open at a time
+    self._openDropdown = nil       -- OptionsFrame currently open (or nil)
+    self._openDropdownClose = nil  -- function to call to close it
+    self._openDropdownButton = nil -- the DropBtn that opened it (clicking it again = its own toggle)
+
+    -- Global click-outside-to-close: if a dropdown is open and the user
+    -- presses anywhere that isn't the option list itself or the button
+    -- that opened it, close it. This is what actually makes dropdowns
+    -- closable when the option list happens to sit over other UI.
+    UserInputService.InputBegan:Connect(function(input)
+        if not self._openDropdown or not self._openDropdown.Visible then return end
+        if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        local pos = Vector2.new(input.Position.X, input.Position.Y)
+
+        local function InBounds(frame)
+            if not frame then return false end
+            local ap, asz = frame.AbsolutePosition, frame.AbsoluteSize
+            return pos.X >= ap.X and pos.X <= ap.X + asz.X and pos.Y >= ap.Y and pos.Y <= ap.Y + asz.Y
+        end
+
+        if InBounds(self._openDropdown) or InBounds(self._openDropdownButton) then
+            return -- let the option button / toggle button handle it themselves
+        end
+
+        if self._openDropdownClose then
+            self._openDropdownClose()
+        end
+    end)
 
     return self
 end
@@ -971,28 +1019,35 @@ function Library:CreatePage(pageName, icon)
                 }, OptionsScroll)
 
                 local isOpen = false
+                local followConn = nil
                 local function CloseDropdown()
                     isOpen = false
                     OptionsFrame.Visible = false
                     Tween(Chevron, {Rotation = 0}, 0.15)
+                    if followConn then
+                        followConn:Disconnect()
+                        followConn = nil
+                    end
                     if library._openDropdown == OptionsFrame then
                         library._openDropdown = nil
+                        library._openDropdownClose = nil
+                        library._openDropdownButton = nil
                     end
                 end
 
                 local function OpenDropdown()
-                    if library._openDropdown and library._openDropdown ~= OptionsFrame then
-                        library._openDropdown.Visible = false
+                    if library._openDropdown and library._openDropdown ~= OptionsFrame and library._openDropdownClose then
+                        library._openDropdownClose()
                     end
-                    local abs = DropBtn.AbsolutePosition
-                    local size = DropBtn.AbsoluteSize
                     local optH = math.min(#list * 26 + 8, 150)
-                    OptionsFrame.Position = UDim2.new(0, abs.X, 0, abs.Y + size.Y + 4)
-                    OptionsFrame.Size = UDim2.new(0, size.X, 0, optH)
                     OptionsFrame.Visible = true
                     isOpen = true
                     library._openDropdown = OptionsFrame
+                    library._openDropdownClose = CloseDropdown
+                    library._openDropdownButton = DropBtn
                     Tween(Chevron, {Rotation = 180}, 0.15)
+                    if followConn then followConn:Disconnect() end
+                    followConn = FollowAnchor(OptionsFrame, DropBtn, optH)
                 end
 
                 local function RenderOptions()
@@ -1123,28 +1178,35 @@ function Library:CreatePage(pageName, icon)
                 }, OptionsScroll)
 
                 local isOpen = false
+                local followConn = nil
                 local function CloseDropdown()
                     isOpen = false
                     OptionsFrame.Visible = false
                     Tween(Chevron, {Rotation = 0}, 0.15)
+                    if followConn then
+                        followConn:Disconnect()
+                        followConn = nil
+                    end
                     if library._openDropdown == OptionsFrame then
                         library._openDropdown = nil
+                        library._openDropdownClose = nil
+                        library._openDropdownButton = nil
                     end
                 end
 
                 local function OpenDropdown()
-                    if library._openDropdown and library._openDropdown ~= OptionsFrame then
-                        library._openDropdown.Visible = false
+                    if library._openDropdown and library._openDropdown ~= OptionsFrame and library._openDropdownClose then
+                        library._openDropdownClose()
                     end
-                    local abs = DropBtn.AbsolutePosition
-                    local size = DropBtn.AbsoluteSize
                     local optH = math.min(#list * 26 + 8, 150)
-                    OptionsFrame.Position = UDim2.new(0, abs.X, 0, abs.Y + size.Y + 4)
-                    OptionsFrame.Size = UDim2.new(0, size.X, 0, optH)
                     OptionsFrame.Visible = true
                     isOpen = true
                     library._openDropdown = OptionsFrame
+                    library._openDropdownClose = CloseDropdown
+                    library._openDropdownButton = DropBtn
                     Tween(Chevron, {Rotation = 180}, 0.15)
+                    if followConn then followConn:Disconnect() end
+                    followConn = FollowAnchor(OptionsFrame, DropBtn, optH)
                 end
 
                 local function RenderOptions()
@@ -1260,12 +1322,5 @@ function Library:CreatePage(pageName, icon)
 
     return Page
 end
-
--- Close any open dropdown when clicking elsewhere on screen
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    -- handled per-instance by AbsolutePosition checks would be heavier;
-    -- simplest reliable approach: dropdown closes itself on next option
-    -- click or toggle click, this is just a safety net for outside clicks
-end)
 
 return Library
