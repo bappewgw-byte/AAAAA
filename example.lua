@@ -1,43 +1,47 @@
+-- Example Generous UI
+-- ====================
+-- Loadsting library
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bappewgw-byte/AAAAA/refs/heads/main/library.lua?v=" .. tick()))()
-
-local Window = Library.new("Balright", "for PUBG")
-
--- Group / Kategori Kiri
-Window:AddCategory("Main")
-
--- Page Kiri 1 — icon sekarang pake nama Lucide, bukan emoji lagi
-local Page1 = Window:CreatePage("Page", "crosshair")
-
--- Sub-Tabs (Pills Kanan)
-local CombatSub = Page1:CreateSubTab("Combat")
-local WeaponSub = Page1:CreateSubTab("Weapon")
-local FovSub    = Page1:CreateSubTab("FoV")
-
+-- ====================
+-- Window
+local Window = Library.new("Saphire", "Roblox")
+-- =====================
+-- Category
+Window:AddCategory("Category")
+-- ====================
+-- Page
+local Page1 = Window:CreatePage("Home", "home")
+-- ====================
+-- Tabs Index
+local MenuSub1 = Page1:CreateSubTab("Tabs 1")
+local MenuSub2 = Page1:CreateSubTab("Tabs 2")
+local MenuSub3 = Page1:CreateSubTab("Tabs 3")
+-- ====================
 -- Card Container di dalam Combat Sub-Tab
-local AimbotCard = CombatSub:CreateCard("Aimbot", "target")
+local ExampleCard = MenuSub1:CreateCard("Example", "target")
 
 -- Toggle
-AimbotCard:AddToggle("Toggle", false, function(val)
+ExampleCard:AddToggle("Toggle", false, function(val)
     print("Toggle:", val)
 end)
 
 -- Button
-AimbotCard:AddButton("Click Me", function()
+ExampleCard:AddButton("Button", function()
     Window:Notify("Berhasil", "Tombol udah diklik!", 3, "check-circle")
 end)
 
 -- Slider
-AimbotCard:AddSlider("Slider", 0, 100, 50, function(val)
+ExampleCard:AddSlider("Slider", 0, 100, 50, function(val)
     print("Slider:", val)
 end)
 
--- Dropdown Single Select (sekarang ada parameter "default" sebelum callback)
-AimbotCard:AddDropdown("Dropdown", {"Option 1", "Option 2", "Option 3"}, "Option 1", function(selected)
+-- Dropdown Single Select
+ExampleCard:AddDropdown("Dropdown", {"Option 1", "Option 2", "Option 3"}, "Option 1", function(selected)
     print("Selected:", selected)
 end)
 
--- Dropdown Multi Select (baru)
-AimbotCard:AddMultiDropdown("Multi Dropdown", {"Head", "Chest", "Legs"}, {"Head"}, function(selected)
+-- Dropdown Multi Select
+ExampleCard:AddMultiDropdown("Multi Dropdown", {"Option 1", "Option 2", "Option 3"}, {"Option 1"}, function(selected)
     print("Selected list:")
     for _, v in ipairs(selected) do
         print(" -", v)
@@ -45,13 +49,14 @@ AimbotCard:AddMultiDropdown("Multi Dropdown", {"Head", "Chest", "Legs"}, {"Head"
 end)
 
 -- Textbox
-AimbotCard:AddTextbox("Text", "Enter text...", function(txt)
+ExampleCard:AddTextbox("Text", "Enter text...", function(txt)
     print("Input:", txt)
 end)
 
--- Label (baru, buat status/info doang)
-AimbotCard:AddLabel("Status: Idle")
+-- Label 
+ExampleCard:AddLabel("Status: Idle")
 
+-- ====================
 -- Group Kategori Kiri 2
 Window:AddCategory("Settings")
 local SettingsPage = Window:CreatePage("Settings", "settings")
@@ -62,5 +67,5 @@ GeneralCard:AddToggle("Auto Save", true, function(val)
     print("Auto Save:", val)
 end)
 
--- Notifikasi bisa dipanggil kapan aja, dari mana aja
-Window:Notify("Selamat Datang", "UI berhasil dimuat", 4, "gamepad-2")
+-- Notifikasi
+Window:Notify("Welcome Sir", "Script berhasil dimuat", 4, "gamepad-2")
