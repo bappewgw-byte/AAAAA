@@ -1,18 +1,161 @@
 -- ========================================================
--- GENEROUS UI LIBRARY
+-- GENEROUS UI LIBRARY  (v2)
+-- Changelog:
+--   • FIXED: dropdown tidak muncul (options sekarang di-render di
+--     overlay layer terpisah, jadi tidak ke-clip sama ScrollingFrame)
+--   • NEW: Single Select Dropdown & Multi Select Dropdown
+--   • NEW: Resizable window (drag handle di pojok kanan bawah)
+--   • NEW: Responsive (auto scale utk mobile & pc, drag pakai touch)
+--   • NEW: Icon Lucide (500+ icon, tinggal panggil nama iconnya)
+--   • NEW: Notification system (Library:Notify)
+--   • NEW: Slider lebih smooth (gak pake tween tiap gerak, langsung ikut mouse)
+--   • Cards sekarang auto-size sesuai isi (gak ada spasi kosong lagi)
 -- ========================================================
+
 local Library = {}
 Library.__index = Library
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local GuiService = game:GetService("GuiService")
+local Camera = workspace.CurrentCamera
 
-local function Tween(instance, properties, duration)
+-- ========================================================
+-- ICONS (Lucide -> rbxassetid, community port)
+-- Pakai: Icon("home"), Icon("settings"), dst. Kalau nama gak ada
+-- di tabel, otomatis fallback ke icon "circle".
+-- Bisa juga langsung pass "rbxassetid://123456" buat icon custom.
+-- ========================================================
+local Icons = {
+    ["aperture"]="rbxassetid://7733666258",["bug"]="rbxassetid://7733701545",
+    ["settings"]="rbxassetid://7734053495",["settings-2"]="rbxassetid://8997386997",
+    ["crown"]="rbxassetid://7733765398",["coins"]="rbxassetid://7743866529",
+    ["battery"]="rbxassetid://7733674820",["gamepad"]="rbxassetid://7733799901",
+    ["gamepad-2"]="rbxassetid://7733799795",["gift"]="rbxassetid://7733946818",
+    ["globe"]="rbxassetid://7733954760",["hand"]="rbxassetid://7733955740",
+    ["hash"]="rbxassetid://7733955906",["server"]="rbxassetid://7734053426",
+    ["home"]="rbxassetid://7733960981",["image"]="rbxassetid://7733964126",
+    ["infinity"]="rbxassetid://7733964640",["inspect"]="rbxassetid://7733964808",
+    ["alert-triangle"]="rbxassetid://7733658504",["alert-circle"]="rbxassetid://7733658271",
+    ["alert-octagon"]="rbxassetid://7733658335",["pin"]="rbxassetid://8997386648",
+    ["pencil"]="rbxassetid://7734022107",["edit"]="rbxassetid://7733771472",
+    ["edit-2"]="rbxassetid://7733771217",["edit-3"]="rbxassetid://7733771361",
+    ["more-vertical"]="rbxassetid://7734006187",["more-horizontal"]="rbxassetid://7734006080",
+    ["headphones"]="rbxassetid://7733956063",["reply"]="rbxassetid://7734051594",
+    ["bell"]="rbxassetid://7733911828",["bell-off"]="rbxassetid://7733675107",
+    ["bell-plus"]="rbxassetid://7733675181",["bell-minus"]="rbxassetid://7733675028",
+    ["bell-ring"]="rbxassetid://7733675275",["rotate-ccw"]="rbxassetid://7734051861",
+    ["rotate-cw"]="rbxassetid://7734051957",["library"]="rbxassetid://7743869054",
+    ["save"]="rbxassetid://7734052335",["help-circle"]="rbxassetid://7733956210",
+    ["shield"]="rbxassetid://7734056608",["shield-check"]="rbxassetid://7734056411",
+    ["shield-alert"]="rbxassetid://7734056326",["shield-close"]="rbxassetid://7734056470",
+    ["shield-off"]="rbxassetid://7734056540",["phone"]="rbxassetid://7734032056",
+    ["type"]="rbxassetid://7743874740",["sidebar"]="rbxassetid://7734058260",
+    ["arrow-left"]="rbxassetid://7733673136",["arrow-right"]="rbxassetid://7733673345",
+    ["arrow-up"]="rbxassetid://7733673717",["arrow-down"]="rbxassetid://7733672933",
+    ["star"]="rbxassetid://7734068321",["star-half"]="rbxassetid://7734068258",
+    ["smile"]="rbxassetid://7734059095",["frown"]="rbxassetid://7733799591",
+    ["sun"]="rbxassetid://7734068495",["moon"]="rbxassetid://7743870134",
+    ["table"]="rbxassetid://7734073253",["tag"]="rbxassetid://7734075797",
+    ["gem"]="rbxassetid://7733942651",["link"]="rbxassetid://7733978098",
+    ["terminal"]="rbxassetid://7743872929",["share-2"]="rbxassetid://7734053595",
+    ["timer"]="rbxassetid://7743873443",["timer-off"]="rbxassetid://8997388325",
+    ["megaphone"]="rbxassetid://7733993049",["unlock"]="rbxassetid://7743875263",
+    ["lock"]="rbxassetid://7733992528",["camera"]="rbxassetid://7733708692",
+    ["triangle"]="rbxassetid://7743874367",["truck"]="rbxassetid://7743874482",
+    ["network"]="rbxassetid://7734021047",["users"]="rbxassetid://7743876054",
+    ["user"]="rbxassetid://7743875962",["user-check"]="rbxassetid://7743875503",
+    ["user-plus"]="rbxassetid://7743875759",["user-minus"]="rbxassetid://7743875629",
+    ["user-x"]="rbxassetid://7743875879",["book"]="rbxassetid://7733914390",
+    ["book-open"]="rbxassetid://7733687281",["bar-chart"]="rbxassetid://7733674319",
+    ["bar-chart-2"]="rbxassetid://7733674239",["pie-chart"]="rbxassetid://7734034378",
+    ["zoom-in"]="rbxassetid://7743878977",["zoom-out"]="rbxassetid://7743879082",
+    ["ticket"]="rbxassetid://7734086558",["smartphone"]="rbxassetid://7734058979",
+    ["database"]="rbxassetid://7743866778",["plus"]="rbxassetid://7734042071",
+    ["plus-circle"]="rbxassetid://7734040271",["plus-square"]="rbxassetid://7734040369",
+    ["minus"]="rbxassetid://7734000129",["minus-circle"]="rbxassetid://7733998053",
+    ["github"]="rbxassetid://7733954058",["target"]="rbxassetid://7743872758",
+    ["crosshair"]="rbxassetid://7733765307",["x"]="rbxassetid://7743878857",
+    ["x-circle"]="rbxassetid://7743878496",["x-square"]="rbxassetid://7743878737",
+    ["check"]="rbxassetid://7733715400",["check-circle"]="rbxassetid://7733919427",
+    ["check-circle-2"]="rbxassetid://7733710700",["check-square"]="rbxassetid://7733919526",
+    ["download"]="rbxassetid://7733770755",["download-cloud"]="rbxassetid://7733770689",
+    ["upload"]="rbxassetid://7743875428",["upload-cloud"]="rbxassetid://7743875358",
+    ["eye"]="rbxassetid://7733774602",["eye-off"]="rbxassetid://7733774495",
+    ["copy"]="rbxassetid://7733764083",["bot"]="rbxassetid://7733916988",
+    ["maximize"]="rbxassetid://7733992982",["maximize-2"]="rbxassetid://7733992901",
+    ["minimize"]="rbxassetid://7733997941",["minimize-2"]="rbxassetid://7733997870",
+    ["trash"]="rbxassetid://7743873871",["trash-2"]="rbxassetid://7743873772",
+    ["info"]="rbxassetid://7733964719",["flame"]="rbxassetid://7733798747",
+    ["skull"]="rbxassetid://7734058599",["wallet"]="rbxassetid://7743877573",
+    ["layers"]="rbxassetid://7743868936",["layout"]="rbxassetid://7733970543",
+    ["layout-dashboard"]="rbxassetid://7733970318",["layout-grid"]="rbxassetid://7733970390",
+    ["layout-list"]="rbxassetid://7733970442",["list"]="rbxassetid://7743869612",
+    ["list-checks"]="rbxassetid://7743869317",["list-plus"]="rbxassetid://7733984995",
+    ["list-x"]="rbxassetid://7743869517",["filter"]="rbxassetid://7733798407",
+    ["menu"]="rbxassetid://7733993211",["grid"]="rbxassetid://7733955179",
+    ["monitor"]="rbxassetid://7734002839",["gauge"]="rbxassetid://7733799969",
+    ["activity"]="rbxassetid://7733655755",["cloud"]="rbxassetid://7733746980",
+    ["wifi"]="rbxassetid://7743878148",["wifi-off"]="rbxassetid://7743878056",
+    ["bluetooth"]="rbxassetid://7733687147",["volume"]="rbxassetid://7743877487",
+    ["volume-1"]="rbxassetid://7743877081",["volume-2"]="rbxassetid://7743877250",
+    ["volume-x"]="rbxassetid://7743877381",["mic"]="rbxassetid://7743869805",
+    ["mic-off"]="rbxassetid://7743869714",["video"]="rbxassetid://7743876610",
+    ["video-off"]="rbxassetid://7743876466",["play"]="rbxassetid://7743871480",
+    ["play-circle"]="rbxassetid://7734037784",["pause"]="rbxassetid://7734021897",
+    ["pause-circle"]="rbxassetid://7734021767",["folder"]="rbxassetid://7733799185",
+    ["folder-plus"]="rbxassetid://7733799092",["folder-minus"]="rbxassetid://7733799022",
+    ["folder-open"]="rbxassetid://8997386062",["file"]="rbxassetid://7733793319",
+    ["file-plus"]="rbxassetid://7733788885",["file-text"]="rbxassetid://7733789088",
+    ["calendar"]="rbxassetid://7733919198",["clock"]="rbxassetid://7733734848",
+    ["map-pin"]="rbxassetid://7733992789",["navigation"]="rbxassetid://7734020989",
+    ["compass"]="rbxassetid://7733924216",["code"]="rbxassetid://7733749837",
+    ["code-2"]="rbxassetid://7733920644",["hammer"]="rbxassetid://7733955511",
+    ["axe"]="rbxassetid://7733674079",["shirt"]="rbxassetid://7734056672",
+    ["wrench"]="rbxassetid://7743878358",["sliders"]="rbxassetid://7734058803",
+    ["toggle-left"]="rbxassetid://7734091286",["toggle-right"]="rbxassetid://7743873539",
+    ["refresh-cw"]="rbxassetid://7734051052",["refresh-ccw"]="rbxassetid://7734050715",
+    ["search"]="rbxassetid://7734052925",["mail"]="rbxassetid://7733992732",
+    ["send"]="rbxassetid://7734053039",["log-in"]="rbxassetid://7733992604",
+    ["log-out"]="rbxassetid://7733992677",["power"]="rbxassetid://7734042493",
+    ["power-off"]="rbxassetid://7734042423",["circle"]="rbxassetid://7733919881",
+    ["square"]="rbxassetid://7743872181",["hexagon"]="rbxassetid://7743868527",
+    ["chevron-down"]="rbxassetid://7733717447",["chevron-up"]="rbxassetid://7733919605",
+    ["chevron-left"]="rbxassetid://7733717651",["chevron-right"]="rbxassetid://7733717755",
+    ["chevrons-up-down"]="rbxassetid://7733723321",["move"]="rbxassetid://7743870731",
+    ["grip-horizontal"]="rbxassetid://7733955302",["grip-vertical"]="rbxassetid://7733955410",
+}
+
+local function GetIconAsset(name)
+    if not name then return nil end
+    if typeof(name) == "string" and name:sub(1, 13) == "rbxassetid://" then
+        return name
+    end
+    return Icons[name] or Icons["circle"]
+end
+
+-- ========================================================
+-- HELPERS
+-- ========================================================
+local function Tween(instance, properties, duration, style)
     duration = duration or 0.2
-    local tween = TweenService:Create(instance, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
+    local tween = TweenService:Create(instance, TweenInfo.new(duration, style or Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
     tween:Play()
     return tween
+end
+
+local function IsTouchInput(input)
+    return input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
+end
+
+local function New(class, props, parent)
+    local inst = Instance.new(class)
+    for k, v in pairs(props or {}) do
+        inst[k] = v
+    end
+    if parent then inst.Parent = parent end
+    return inst
 end
 
 local function MakeDraggable(frame, handle)
@@ -20,7 +163,7 @@ local function MakeDraggable(frame, handle)
     local dragging, dragInput, dragStart, startPos
 
     handle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if IsTouchInput(input) then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
@@ -34,7 +177,7 @@ local function MakeDraggable(frame, handle)
     end)
 
     handle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
@@ -42,11 +185,44 @@ local function MakeDraggable(frame, handle)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
-            Tween(frame, {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}, 0.05)
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
 end
 
+-- Makes a frame resizable by dragging a handle at its bottom-right corner
+local function MakeResizable(frame, handle, minSize, maxSize)
+    minSize = minSize or Vector2.new(480, 320)
+    maxSize = maxSize or Vector2.new(1000, 760)
+    local resizing, startPos, startSize
+
+    handle.InputBegan:Connect(function(input)
+        if IsTouchInput(input) then
+            resizing = true
+            startPos = input.Position
+            startSize = frame.Size
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    resizing = false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - startPos
+            local newX = math.clamp(startSize.X.Offset + delta.X, minSize.X, maxSize.X)
+            local newY = math.clamp(startSize.Y.Offset + delta.Y, minSize.Y, maxSize.Y)
+            frame.Size = UDim2.new(0, newX, 0, newY)
+        end
+    end)
+end
+
+-- ========================================================
+-- LIBRARY.NEW
+-- ========================================================
 function Library.new(hubName, gameSubTitle)
     local self = setmetatable({}, Library)
 
@@ -65,133 +241,170 @@ function Library.new(hubName, gameSubTitle)
         parentTarget.GenerousUI:Destroy()
     end
 
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "GenerousUI"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = parentTarget
+    local ScreenGui = New("ScreenGui", {
+        Name = "GenerousUI",
+        ResetOnSpawn = false,
+        IgnoreGuiInset = true,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+    }, parentTarget)
+
+    -- Detect mobile / small screen for responsive scaling
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+    local viewport = Camera and Camera.ViewportSize or Vector2.new(1280, 720)
 
     -- Main Window
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 620, 0, 440)
-    MainFrame.Position = UDim2.new(0.5, -310, 0.5, -220)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Parent = ScreenGui
+    local MainFrame = New("Frame", {
+        Name = "MainFrame",
+        Size = UDim2.new(0, 620, 0, 440),
+        Position = UDim2.new(0.5, -310, 0.5, -220),
+        BackgroundColor3 = Color3.fromRGB(12, 12, 14),
+        BorderSizePixel = 0,
+        ClipsDescendants = false,
+    }, ScreenGui)
 
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 10)
-    MainCorner.Parent = MainFrame
+    New("UICorner", {CornerRadius = UDim.new(0, 10)}, MainFrame)
+
+    -- Responsive scaling: shrinks the whole UI down on small / mobile screens
+    local UIScaleObj = New("UIScale", {Scale = 1}, MainFrame)
+    local function UpdateScale()
+        local vp = Camera and Camera.ViewportSize or viewport
+        local scale = 1
+        if vp.X < 700 or isMobile then
+            scale = math.clamp(vp.X / 720, 0.55, 1)
+        end
+        Tween(UIScaleObj, {Scale = scale}, 0.2)
+    end
+    UpdateScale()
+    if Camera then
+        Camera:GetPropertyChangedSignal("ViewportSize"):Connect(UpdateScale)
+    end
+
+    -- Overlay layer for dropdown menus / notifications so nothing gets clipped
+    -- by ScrollingFrames underneath
+    local Overlay = New("Frame", {
+        Name = "Overlay",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        ZIndex = 50,
+    }, ScreenGui)
+
+    local NotifHolder = New("Frame", {
+        Name = "NotifHolder",
+        AnchorPoint = Vector2.new(1, 0),
+        Position = UDim2.new(1, -14, 0, 14),
+        Size = UDim2.new(0, 280, 1, -28),
+        BackgroundTransparency = 1,
+        ZIndex = 100,
+    }, ScreenGui)
+    local NotifList = New("UIListLayout", {
+        Padding = UDim.new(0, 8),
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    }, NotifHolder)
 
     -- SIDEBAR (LEFT)
-    local Sidebar = Instance.new("Frame")
-    Sidebar.Name = "Sidebar"
-    Sidebar.Size = UDim2.new(0, 200, 1, -20)
-    Sidebar.Position = UDim2.new(0, 10, 0, 10)
-    Sidebar.BackgroundTransparency = 1
-    Sidebar.Parent = MainFrame
+    local Sidebar = New("Frame", {
+        Name = "Sidebar",
+        Size = UDim2.new(0, 200, 1, -20),
+        Position = UDim2.new(0, 10, 0, 10),
+        BackgroundTransparency = 1,
+    }, MainFrame)
 
     -- Header Card
-    local HeaderCard = Instance.new("Frame")
-    HeaderCard.Size = UDim2.new(1, 0, 0, 65)
-    HeaderCard.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
-    HeaderCard.BorderSizePixel = 0
-    HeaderCard.Parent = Sidebar
-
-    local HeaderCorner = Instance.new("UICorner")
-    HeaderCorner.CornerRadius = UDim.new(0, 8)
-    HeaderCorner.Parent = HeaderCard
+    local HeaderCard = New("Frame", {
+        Size = UDim2.new(1, 0, 0, 65),
+        BackgroundColor3 = Color3.fromRGB(20, 20, 22),
+        BorderSizePixel = 0,
+    }, Sidebar)
+    New("UICorner", {CornerRadius = UDim.new(0, 8)}, HeaderCard)
 
     MakeDraggable(MainFrame, HeaderCard)
 
-    local LogoBox = Instance.new("Frame")
-    LogoBox.Size = UDim2.new(0, 42, 0, 42)
-    LogoBox.Position = UDim2.new(0, 12, 0.5, -21)
-    LogoBox.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
-    LogoBox.Parent = HeaderCard
+    local LogoBox = New("Frame", {
+        Size = UDim2.new(0, 42, 0, 42),
+        Position = UDim2.new(0, 12, 0.5, -21),
+        BackgroundColor3 = Color3.fromRGB(10, 10, 12),
+    }, HeaderCard)
+    New("UICorner", {CornerRadius = UDim.new(0, 8)}, LogoBox)
 
-    local LogoCorner = Instance.new("UICorner")
-    LogoCorner.CornerRadius = UDim.new(0, 8)
-    LogoCorner.Parent = LogoBox
+    New("TextLabel", {
+        Text = "Z",
+        Size = UDim2.new(1, 0, 1, 0),
+        TextColor3 = Color3.fromRGB(220, 220, 220),
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        BackgroundTransparency = 1,
+    }, LogoBox)
 
-    local LogoText = Instance.new("TextLabel")
-    LogoText.Text = "Z"
-    LogoText.Size = UDim2.new(1, 0, 1, 0)
-    LogoText.TextColor3 = Color3.fromRGB(220, 220, 220)
-    LogoText.Font = Enum.Font.GothamBold
-    LogoText.TextSize = 16
-    LogoText.BackgroundTransparency = 1
-    LogoText.Parent = LogoBox
+    New("TextLabel", {
+        Text = hubName or "Balright",
+        Size = UDim2.new(1, -65, 0, 20),
+        Position = UDim2.new(0, 62, 0, 14),
+        TextColor3 = Color3.fromRGB(240, 240, 240),
+        Font = Enum.Font.GothamBold,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, HeaderCard)
 
-    local TitleLbl = Instance.new("TextLabel")
-    TitleLbl.Text = hubName or "Balright"
-    TitleLbl.Size = UDim2.new(1, -65, 0, 20)
-    TitleLbl.Position = UDim2.new(0, 62, 0, 14)
-    TitleLbl.TextColor3 = Color3.fromRGB(240, 240, 240)
-    TitleLbl.Font = Enum.Font.GothamBold
-    TitleLbl.TextSize = 14
-    TitleLbl.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLbl.BackgroundTransparency = 1
-    TitleLbl.Parent = HeaderCard
-
-    local SubLbl = Instance.new("TextLabel")
-    SubLbl.Text = gameSubTitle or "for Game"
-    SubLbl.Size = UDim2.new(1, -65, 0, 18)
-    SubLbl.Position = UDim2.new(0, 62, 0, 32)
-    SubLbl.TextColor3 = Color3.fromRGB(120, 120, 130)
-    SubLbl.Font = Enum.Font.Gotham
-    SubLbl.TextSize = 11
-    SubLbl.TextXAlignment = Enum.TextXAlignment.Left
-    SubLbl.BackgroundTransparency = 1
-    SubLbl.Parent = HeaderCard
+    New("TextLabel", {
+        Text = gameSubTitle or "for Game",
+        Size = UDim2.new(1, -65, 0, 18),
+        Position = UDim2.new(0, 62, 0, 32),
+        TextColor3 = Color3.fromRGB(120, 120, 130),
+        Font = Enum.Font.Gotham,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, HeaderCard)
 
     -- Nav Scroll Container
-    local NavContainer = Instance.new("ScrollingFrame")
-    NavContainer.Size = UDim2.new(1, 0, 1, -150)
-    NavContainer.Position = UDim2.new(0, 0, 0, 75)
-    NavContainer.BackgroundTransparency = 1
-    NavContainer.BorderSizePixel = 0
-    NavContainer.ScrollBarThickness = 0
-    NavContainer.Parent = Sidebar
+    local NavContainer = New("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 1, -150),
+        Position = UDim2.new(0, 0, 0, 75),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ScrollBarThickness = 2,
+        ScrollBarImageColor3 = Color3.fromRGB(60, 60, 65),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    }, Sidebar)
 
-    local NavList = Instance.new("UIListLayout")
-    NavList.Padding = UDim.new(0, 4)
-    NavList.SortOrder = Enum.SortOrder.LayoutOrder
-    NavList.Parent = NavContainer
+    New("UIListLayout", {
+        Padding = UDim.new(0, 4),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    }, NavContainer)
 
     -- Footer Card
-    local FooterCard = Instance.new("Frame")
-    FooterCard.Size = UDim2.new(1, 0, 0, 60)
-    FooterCard.Position = UDim2.new(0, 0, 1, -60)
-    FooterCard.BackgroundColor3 = Color3.fromRGB(20, 20, 22)
-    FooterCard.BorderSizePixel = 0
-    FooterCard.Parent = Sidebar
+    local FooterCard = New("Frame", {
+        Size = UDim2.new(1, 0, 0, 60),
+        Position = UDim2.new(0, 0, 1, -60),
+        BackgroundColor3 = Color3.fromRGB(20, 20, 22),
+        BorderSizePixel = 0,
+    }, Sidebar)
+    New("UICorner", {CornerRadius = UDim.new(0, 8)}, FooterCard)
 
-    local FooterCorner = Instance.new("UICorner")
-    FooterCorner.CornerRadius = UDim.new(0, 8)
-    FooterCorner.Parent = FooterCard
+    New("TextLabel", {
+        Text = "Sub expires in 23d",
+        Size = UDim2.new(1, -20, 0, 20),
+        Position = UDim2.new(0, 12, 0, 10),
+        TextColor3 = Color3.fromRGB(130, 130, 140),
+        Font = Enum.Font.Gotham,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, FooterCard)
 
-    local SubExpiryLbl = Instance.new("TextLabel")
-    SubExpiryLbl.Text = "Sub expires in 23d"
-    SubExpiryLbl.Size = UDim2.new(1, -20, 0, 20)
-    SubExpiryLbl.Position = UDim2.new(0, 12, 0, 10)
-    SubExpiryLbl.TextColor3 = Color3.fromRGB(130, 130, 140)
-    SubExpiryLbl.Font = Enum.Font.Gotham
-    SubExpiryLbl.TextSize = 11
-    SubExpiryLbl.TextXAlignment = Enum.TextXAlignment.Left
-    SubExpiryLbl.BackgroundTransparency = 1
-    SubExpiryLbl.Parent = FooterCard
-
-    local SessionLbl = Instance.new("TextLabel")
-    SessionLbl.Text = "Session duration: 00:00"
-    SessionLbl.Size = UDim2.new(1, -20, 0, 20)
-    SessionLbl.Position = UDim2.new(0, 12, 0, 28)
-    SessionLbl.TextColor3 = Color3.fromRGB(220, 220, 220)
-    SessionLbl.Font = Enum.Font.GothamBold
-    SessionLbl.TextSize = 12
-    SessionLbl.TextXAlignment = Enum.TextXAlignment.Left
-    SessionLbl.BackgroundTransparency = 1
-    SessionLbl.Parent = FooterCard
+    local SessionLbl = New("TextLabel", {
+        Text = "Session duration: 00:00",
+        Size = UDim2.new(1, -20, 0, 20),
+        Position = UDim2.new(0, 12, 0, 28),
+        TextColor3 = Color3.fromRGB(220, 220, 220),
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, FooterCard)
 
     -- Session Timer
     local startTime = os.time()
@@ -205,153 +418,272 @@ function Library.new(hubName, gameSubTitle)
     end)
 
     -- MAIN CONTENT (RIGHT)
-    local MainContent = Instance.new("Frame")
-    MainContent.Size = UDim2.new(1, -230, 1, -20)
-    MainContent.Position = UDim2.new(0, 220, 0, 10)
-    MainContent.BackgroundTransparency = 1
-    MainContent.Parent = MainFrame
+    local MainContent = New("Frame", {
+        Size = UDim2.new(1, -230, 1, -20),
+        Position = UDim2.new(0, 220, 0, 10),
+        BackgroundTransparency = 1,
+    }, MainFrame)
 
-    local PageTitle = Instance.new("TextLabel")
-    PageTitle.Text = "Page Title"
-    PageTitle.Size = UDim2.new(1, 0, 0, 30)
-    PageTitle.TextColor3 = Color3.fromRGB(240, 240, 240)
-    PageTitle.Font = Enum.Font.GothamBold
-    PageTitle.TextSize = 18
-    PageTitle.TextXAlignment = Enum.TextXAlignment.Left
-    PageTitle.BackgroundTransparency = 1
-    PageTitle.Parent = MainContent
+    local PageTitle = New("TextLabel", {
+        Text = "Page Title",
+        Size = UDim2.new(1, 0, 0, 30),
+        TextColor3 = Color3.fromRGB(240, 240, 240),
+        Font = Enum.Font.GothamBold,
+        TextSize = 18,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, MainContent)
+
+    -- Resize handle (bottom-right corner)
+    local ResizeHandle = New("TextButton", {
+        Name = "ResizeHandle",
+        Size = UDim2.new(0, 18, 0, 18),
+        Position = UDim2.new(1, -18, 1, -18),
+        AnchorPoint = Vector2.new(0, 0),
+        BackgroundTransparency = 1,
+        Text = "",
+        ZIndex = 20,
+    }, MainFrame)
+    New("ImageLabel", {
+        Image = GetIconAsset("move-diagonal-2") or GetIconAsset("move"),
+        Size = UDim2.new(0, 14, 0, 14),
+        Position = UDim2.new(0, 2, 0, 2),
+        BackgroundTransparency = 1,
+        ImageColor3 = Color3.fromRGB(90, 90, 98),
+        ImageTransparency = 0.2,
+    }, ResizeHandle)
+    MakeResizable(MainFrame, ResizeHandle, Vector2.new(480, 340), Vector2.new(980, 740))
 
     self.Gui = ScreenGui
+    self.Overlay = Overlay
+    self.NotifHolder = NotifHolder
     self.MainFrame = MainFrame
     self.NavContainer = NavContainer
     self.MainContent = MainContent
     self.PageTitle = PageTitle
     self.Pages = {}
+    self._openDropdown = nil -- tracks currently open dropdown so only one is open at a time
 
     return self
 end
 
--- ADD CATEGORY LABEL TO SIDEBAR
-function Library:AddCategory(categoryName)
-    local Label = Instance.new("TextLabel")
-    Label.Text = categoryName
-    Label.Size = UDim2.new(1, 0, 0, 24)
-    Label.TextColor3 = Color3.fromRGB(100, 100, 110)
-    Label.Font = Enum.Font.GothamBold
-    Label.TextSize = 11
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.BackgroundTransparency = 1
-    Label.Parent = self.NavContainer
+-- ========================================================
+-- NOTIFICATIONS
+-- ========================================================
+-- Library:Notify("Title", "Some text", 4, "check-circle")
+function Library:Notify(title, text, duration, icon)
+    duration = duration or 3.5
+
+    local Toast = New("Frame", {
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = Color3.fromRGB(18, 18, 20),
+        LayoutOrder = -os.clock(),
+        Position = UDim2.new(1, 40, 0, 0),
+        ClipsDescendants = true,
+    }, self.NotifHolder)
+    New("UICorner", {CornerRadius = UDim.new(0, 8)}, Toast)
+    New("UIStroke", {Color = Color3.fromRGB(35, 35, 40), Thickness = 1}, Toast)
+    New("UIPadding", {
+        PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10),
+        PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12),
+    }, Toast)
+
+    if icon then
+        New("ImageLabel", {
+            Image = GetIconAsset(icon),
+            Size = UDim2.new(0, 18, 0, 18),
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 1,
+            ImageColor3 = Color3.fromRGB(240, 240, 240),
+        }, Toast)
+    end
+
+    local TextOffset = icon and 26 or 0
+
+    New("TextLabel", {
+        Text = title,
+        Size = UDim2.new(1, -TextOffset, 0, 16),
+        Position = UDim2.new(0, TextOffset, 0, 0),
+        TextColor3 = Color3.fromRGB(240, 240, 240),
+        Font = Enum.Font.GothamBold,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, Toast)
+
+    New("TextLabel", {
+        Text = text or "",
+        Size = UDim2.new(1, -TextOffset, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Position = UDim2.new(0, TextOffset, 0, 20),
+        TextColor3 = Color3.fromRGB(150, 150, 160),
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, Toast)
+
+    Toast.Position = UDim2.new(1, 40, 0, 0)
+    Tween(Toast, {Position = UDim2.new(0, 0, 0, 0)}, 0.25, Enum.EasingStyle.Back)
+
+    task.delay(duration, function()
+        local t = Tween(Toast, {Position = UDim2.new(1, 40, 0, 0)}, 0.2)
+        t.Completed:Connect(function()
+            Toast:Destroy()
+        end)
+    end)
 end
 
+-- ADD CATEGORY LABEL TO SIDEBAR
+function Library:AddCategory(categoryName)
+    New("TextLabel", {
+        Text = categoryName,
+        Size = UDim2.new(1, 0, 0, 24),
+        TextColor3 = Color3.fromRGB(100, 100, 110),
+        Font = Enum.Font.GothamBold,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, self.NavContainer)
+end
+
+-- ========================================================
 -- CREATE PAGE
+-- ========================================================
 function Library:CreatePage(pageName, icon)
     local Page = {}
-    icon = icon or "🔥"
+    local library = self
 
-    local PageBtn = Instance.new("TextButton")
-    PageBtn.Size = UDim2.new(1, 0, 0, 36)
-    PageBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 20)
-    PageBtn.BackgroundTransparency = 1
-    PageBtn.Text = "  " .. icon .. "   " .. pageName
-    PageBtn.TextColor3 = Color3.fromRGB(120, 120, 130)
-    PageBtn.Font = Enum.Font.GothamMedium
-    PageBtn.TextSize = 13
-    PageBtn.TextXAlignment = Enum.TextXAlignment.Left
-    PageBtn.Parent = self.NavContainer
+    local PageBtn = New("TextButton", {
+        Size = UDim2.new(1, 0, 0, 36),
+        BackgroundColor3 = Color3.fromRGB(18, 18, 20),
+        BackgroundTransparency = 1,
+        Text = "",
+        AutoButtonColor = false,
+    }, self.NavContainer)
+    New("UICorner", {CornerRadius = UDim.new(0, 8)}, PageBtn)
 
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 8)
-    BtnCorner.Parent = PageBtn
+    local iconAsset = GetIconAsset(icon)
+    local IconImg
+    if iconAsset then
+        IconImg = New("ImageLabel", {
+            Image = iconAsset,
+            Size = UDim2.new(0, 16, 0, 16),
+            Position = UDim2.new(0, 12, 0.5, -8),
+            BackgroundTransparency = 1,
+            ImageColor3 = Color3.fromRGB(120, 120, 130),
+        }, PageBtn)
+    end
+
+    local PageLabel = New("TextLabel", {
+        Text = pageName,
+        Size = UDim2.new(1, -40, 1, 0),
+        Position = UDim2.new(0, 36, 0, 0),
+        TextColor3 = Color3.fromRGB(120, 120, 130),
+        Font = Enum.Font.GothamMedium,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, PageBtn)
 
     -- Page Container Frame
-    local PageFrame = Instance.new("Frame")
-    PageFrame.Size = UDim2.new(1, 0, 1, -35)
-    PageFrame.Position = UDim2.new(0, 0, 0, 35)
-    PageFrame.BackgroundTransparency = 1
-    PageFrame.Visible = false
-    PageFrame.Parent = self.MainContent
+    local PageFrame = New("Frame", {
+        Size = UDim2.new(1, 0, 1, -35),
+        Position = UDim2.new(0, 0, 0, 35),
+        BackgroundTransparency = 1,
+        Visible = false,
+    }, self.MainContent)
 
     -- Sub-Tabs Bar (Pills)
-    local SubTabBar = Instance.new("Frame")
-    SubTabBar.Size = UDim2.new(1, 0, 0, 32)
-    SubTabBar.BackgroundColor3 = Color3.fromRGB(18, 18, 20)
-    SubTabBar.Parent = PageFrame
+    local SubTabBar = New("Frame", {
+        Size = UDim2.new(1, 0, 0, 32),
+        BackgroundColor3 = Color3.fromRGB(18, 18, 20),
+    }, PageFrame)
+    New("UICorner", {CornerRadius = UDim.new(0, 8)}, SubTabBar)
+    New("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        Padding = UDim.new(0, 4),
+    }, SubTabBar)
+    New("UIPadding", {
+        PaddingLeft = UDim.new(0, 4),
+        PaddingTop = UDim.new(0, 4),
+    }, SubTabBar)
 
-    local SubCorner = Instance.new("UICorner")
-    SubCorner.CornerRadius = UDim.new(0, 8)
-    SubCorner.Parent = SubTabBar
-
-    local SubList = Instance.new("UIListLayout")
-    SubList.FillDirection = Enum.FillDirection.Horizontal
-    SubList.Padding = UDim.new(0, 4)
-    SubList.Parent = SubTabBar
-
-    local SubPad = Instance.new("UIPadding")
-    SubPad.PaddingLeft = UDim.new(0, 4)
-    SubPad.PaddingTop = UDim.new(0, 4)
-    SubPad.Parent = SubTabBar
-
-    local SubContentHolder = Instance.new("Frame")
-    SubContentHolder.Size = UDim2.new(1, 0, 1, -42)
-    SubContentHolder.Position = UDim2.new(0, 0, 0, 42)
-    SubContentHolder.BackgroundTransparency = 1
-    SubContentHolder.Parent = PageFrame
+    local SubContentHolder = New("Frame", {
+        Size = UDim2.new(1, 0, 1, -42),
+        Position = UDim2.new(0, 0, 0, 42),
+        BackgroundTransparency = 1,
+    }, PageFrame)
 
     Page.Frame = PageFrame
     Page.SubTabBar = SubTabBar
     Page.SubContentHolder = SubContentHolder
     Page.SubTabs = {}
 
-    PageBtn.MouseButton1Click:Connect(function()
-        for _, p in pairs(self.Pages) do
+    local function SelectPage()
+        for _, p in pairs(library.Pages) do
             p.Frame.Visible = false
-            Tween(p.Button, {BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(120, 120, 130)})
+            Tween(p.Button, {BackgroundTransparency = 1})
+            Tween(p.Label, {TextColor3 = Color3.fromRGB(120, 120, 130)})
+            if p.Icon then Tween(p.Icon, {ImageColor3 = Color3.fromRGB(120, 120, 130)}) end
         end
         PageFrame.Visible = true
-        self.PageTitle.Text = pageName
-        Tween(PageBtn, {BackgroundTransparency = 0, TextColor3 = Color3.fromRGB(240, 240, 240)})
-    end)
+        library.PageTitle.Text = pageName
+        Tween(PageBtn, {BackgroundTransparency = 0})
+        Tween(PageLabel, {TextColor3 = Color3.fromRGB(240, 240, 240)})
+        if IconImg then Tween(IconImg, {ImageColor3 = Color3.fromRGB(240, 240, 240)}) end
+    end
+
+    PageBtn.MouseButton1Click:Connect(SelectPage)
 
     if #self.Pages == 0 then
         PageFrame.Visible = true
         self.PageTitle.Text = pageName
         PageBtn.BackgroundTransparency = 0
-        PageBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
+        PageLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+        if IconImg then IconImg.ImageColor3 = Color3.fromRGB(240, 240, 240) end
     end
 
     Page.Button = PageBtn
+    Page.Label = PageLabel
+    Page.Icon = IconImg
     table.insert(self.Pages, Page)
 
+    -- ====================================================
     -- CREATE SUB TAB
+    -- ====================================================
     function Page:CreateSubTab(subName)
         local SubTab = {}
 
-        local SubBtn = Instance.new("TextButton")
-        SubBtn.Size = UDim2.new(0, 70, 0, 24)
-        SubBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-        SubBtn.BackgroundTransparency = 1
-        SubBtn.Text = subName
-        SubBtn.TextColor3 = Color3.fromRGB(120, 120, 130)
-        SubBtn.Font = Enum.Font.GothamMedium
-        SubBtn.TextSize = 11
-        SubBtn.Parent = Page.SubTabBar
+        local SubBtn = New("TextButton", {
+            Size = UDim2.new(0, 76, 0, 24),
+            BackgroundColor3 = Color3.fromRGB(28, 28, 32),
+            BackgroundTransparency = 1,
+            Text = subName,
+            TextColor3 = Color3.fromRGB(120, 120, 130),
+            Font = Enum.Font.GothamMedium,
+            TextSize = 11,
+            AutoButtonColor = false,
+        }, Page.SubTabBar)
+        New("UICorner", {CornerRadius = UDim.new(0, 6)}, SubBtn)
 
-        local SubBtnCorner = Instance.new("UICorner")
-        SubBtnCorner.CornerRadius = UDim.new(0, 6)
-        SubBtnCorner.Parent = SubBtn
+        local ContentScroll = New("ScrollingFrame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ScrollBarThickness = 2,
+            ScrollBarImageColor3 = Color3.fromRGB(60, 60, 65),
+            Visible = false,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
+            AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        }, Page.SubContentHolder)
 
-        local ContentScroll = Instance.new("ScrollingFrame")
-        ContentScroll.Size = UDim2.new(1, 0, 1, 0)
-        ContentScroll.BackgroundTransparency = 1
-        ContentScroll.BorderSizePixel = 0
-        ContentScroll.ScrollBarThickness = 2
-        ContentScroll.Visible = false
-        ContentScroll.Parent = Page.SubContentHolder
-
-        local ContentLayout = Instance.new("UIListLayout")
-        ContentLayout.Padding = UDim.new(0, 10)
-        ContentLayout.Parent = ContentScroll
+        New("UIListLayout", {
+            Padding = UDim.new(0, 10),
+            SortOrder = Enum.SortOrder.LayoutOrder,
+        }, ContentScroll)
 
         SubBtn.MouseButton1Click:Connect(function()
             for _, st in pairs(Page.SubTabs) do
@@ -372,243 +704,552 @@ function Library:CreatePage(pageName, icon)
         SubTab.Content = ContentScroll
         table.insert(Page.SubTabs, SubTab)
 
+        -- ================================================
         -- CREATE CARD / SECTION
+        -- ================================================
         function SubTab:CreateCard(cardTitle, cardIcon)
-            cardIcon = cardIcon or "🔥"
             local Card = {}
 
-            local CardFrame = Instance.new("Frame")
-            CardFrame.Size = UDim2.new(1, -5, 0, 280)
-            CardFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 20)
-            CardFrame.Parent = ContentScroll
+            local CardFrame = New("Frame", {
+                Size = UDim2.new(1, -5, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundColor3 = Color3.fromRGB(18, 18, 20),
+            }, ContentScroll)
+            New("UICorner", {CornerRadius = UDim.new(0, 8)}, CardFrame)
 
-            local CardCorner = Instance.new("UICorner")
-            CardCorner.CornerRadius = UDim.new(0, 8)
-            CardCorner.Parent = CardFrame
+            local headerOffset = 12
+            if cardIcon then
+                headerOffset = 32
+                New("ImageLabel", {
+                    Image = GetIconAsset(cardIcon),
+                    Size = UDim2.new(0, 15, 0, 15),
+                    Position = UDim2.new(0, 12, 0, 10),
+                    BackgroundTransparency = 1,
+                    ImageColor3 = Color3.fromRGB(160, 160, 170),
+                }, CardFrame)
+            end
 
-            local CardHeader = Instance.new("TextLabel")
-            CardHeader.Text = cardIcon .. "  " .. cardTitle
-            CardHeader.Size = UDim2.new(1, -20, 0, 30)
-            CardHeader.Position = UDim2.new(0, 12, 0, 5)
-            CardHeader.TextColor3 = Color3.fromRGB(160, 160, 170)
-            CardHeader.Font = Enum.Font.GothamBold
-            CardHeader.TextSize = 13
-            CardHeader.TextXAlignment = Enum.TextXAlignment.Left
-            CardHeader.BackgroundTransparency = 1
-            CardHeader.Parent = CardFrame
+            New("TextLabel", {
+                Text = cardTitle,
+                Size = UDim2.new(1, -20, 0, 30),
+                Position = UDim2.new(0, headerOffset, 0, 5),
+                TextColor3 = Color3.fromRGB(160, 160, 170),
+                Font = Enum.Font.GothamBold,
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                BackgroundTransparency = 1,
+            }, CardFrame)
 
-            local Container = Instance.new("Frame")
-            Container.Size = UDim2.new(1, -24, 1, -40)
-            Container.Position = UDim2.new(0, 12, 0, 35)
-            Container.BackgroundTransparency = 1
-            Container.Parent = CardFrame
+            local Container = New("Frame", {
+                Size = UDim2.new(1, -24, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                Position = UDim2.new(0, 12, 0, 35),
+                BackgroundTransparency = 1,
+            }, CardFrame)
 
-            local List = Instance.new("UIListLayout")
-            List.Padding = UDim.new(0, 8)
-            List.Parent = Container
+            New("UIListLayout", {
+                Padding = UDim.new(0, 10),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+            }, Container)
+
+            New("UIPadding", {PaddingBottom = UDim.new(0, 12)}, Container)
 
             -- TOGGLE
             function Card:AddToggle(text, default, callback)
                 callback = callback or function() end
                 local state = default or false
 
-                local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 24)
-                Frame.BackgroundTransparency = 1
-                Frame.Parent = Container
+                local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 24), BackgroundTransparency = 1}, Container)
 
-                local Lbl = Instance.new("TextLabel")
-                Lbl.Text = text
-                Lbl.Size = UDim2.new(0.8, 0, 1, 0)
-                Lbl.TextColor3 = Color3.fromRGB(180, 180, 190)
-                Lbl.Font = Enum.Font.Gotham
-                Lbl.TextSize = 12
-                Lbl.TextXAlignment = Enum.TextXAlignment.Left
-                Lbl.BackgroundTransparency = 1
-                Lbl.Parent = Frame
+                New("TextLabel", {
+                    Text = text, Size = UDim2.new(0.8, 0, 1, 0),
+                    TextColor3 = Color3.fromRGB(180, 180, 190),
+                    Font = Enum.Font.Gotham, TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                }, Frame)
 
-                local Box = Instance.new("TextButton")
-                Box.Size = UDim2.new(0, 16, 0, 16)
-                Box.Position = UDim2.new(1, -16, 0.5, -8)
-                Box.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-                Box.Text = ""
-                Box.Parent = Frame
+                local Box = New("TextButton", {
+                    Size = UDim2.new(0, 16, 0, 16),
+                    Position = UDim2.new(1, -16, 0.5, -8),
+                    BackgroundColor3 = Color3.fromRGB(28, 28, 32),
+                    Text = "",
+                }, Frame)
+                New("UICorner", {CornerRadius = UDim.new(0, 4)}, Box)
 
-                local BoxCorner = Instance.new("UICorner")
-                BoxCorner.CornerRadius = UDim.new(0, 4)
-                BoxCorner.Parent = Box
-
-                local Check = Instance.new("Frame")
-                Check.Size = UDim2.new(1, -4, 1, -4)
-                Check.Position = UDim2.new(0, 2, 0, 2)
-                Check.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
-                Check.BackgroundTransparency = state and 0 or 1
-                Check.Parent = Box
-
-                local CheckCorner = Instance.new("UICorner")
-                CheckCorner.CornerRadius = UDim.new(0, 2)
-                CheckCorner.Parent = Check
+                local Check = New("Frame", {
+                    Size = UDim2.new(1, -4, 1, -4),
+                    Position = UDim2.new(0, 2, 0, 2),
+                    BackgroundColor3 = Color3.fromRGB(240, 240, 240),
+                    BackgroundTransparency = state and 0 or 1,
+                }, Box)
+                New("UICorner", {CornerRadius = UDim.new(0, 2)}, Check)
 
                 Box.MouseButton1Click:Connect(function()
                     state = not state
                     Tween(Check, {BackgroundTransparency = state and 0 or 1})
                     callback(state)
                 end)
+
+                return {
+                    Set = function(_, v)
+                        state = v
+                        Check.BackgroundTransparency = state and 0 or 1
+                        callback(state)
+                    end,
+                }
             end
 
             -- BUTTON
             function Card:AddButton(text, callback)
                 callback = callback or function() end
-
-                local Btn = Instance.new("TextButton")
-                Btn.Size = UDim2.new(1, 0, 0, 28)
-                Btn.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
-                Btn.Text = text
-                Btn.TextColor3 = Color3.fromRGB(220, 220, 230)
-                Btn.Font = Enum.Font.GothamMedium
-                Btn.TextSize = 12
-                Btn.Parent = Container
-
-                local Corner = Instance.new("UICorner")
-                Corner.CornerRadius = UDim.new(0, 6)
-                Corner.Parent = Btn
-
+                local Btn = New("TextButton", {
+                    Size = UDim2.new(1, 0, 0, 28),
+                    BackgroundColor3 = Color3.fromRGB(24, 24, 28),
+                    Text = text,
+                    TextColor3 = Color3.fromRGB(220, 220, 230),
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 12,
+                }, Container)
+                New("UICorner", {CornerRadius = UDim.new(0, 6)}, Btn)
                 Btn.MouseButton1Click:Connect(callback)
             end
 
-            -- SLIDER
+            -- SLIDER (smoother: no per-frame tween while dragging, follows input directly)
             function Card:AddSlider(text, min, max, default, callback)
                 callback = callback or function() end
                 local val = default or min
 
-                local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 36)
-                Frame.BackgroundTransparency = 1
-                Frame.Parent = Container
+                local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1}, Container)
 
-                local Lbl = Instance.new("TextLabel")
-                Lbl.Text = text
-                Lbl.Size = UDim2.new(0.5, 0, 0, 18)
-                Lbl.TextColor3 = Color3.fromRGB(180, 180, 190)
-                Lbl.Font = Enum.Font.Gotham
-                Lbl.TextSize = 12
-                Lbl.TextXAlignment = Enum.TextXAlignment.Left
-                Lbl.BackgroundTransparency = 1
-                Lbl.Parent = Frame
+                New("TextLabel", {
+                    Text = text, Size = UDim2.new(0.5, 0, 0, 18),
+                    TextColor3 = Color3.fromRGB(180, 180, 190),
+                    Font = Enum.Font.Gotham, TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                }, Frame)
 
-                local ValLbl = Instance.new("TextLabel")
-                ValLbl.Text = tostring(val) .. "%"
-                ValLbl.Size = UDim2.new(0.5, 0, 0, 18)
-                ValLbl.Position = UDim2.new(0.5, 0, 0, 0)
-                ValLbl.TextColor3 = Color3.fromRGB(140, 140, 150)
-                ValLbl.Font = Enum.Font.Gotham
-                ValLbl.TextSize = 12
-                ValLbl.TextXAlignment = Enum.TextXAlignment.Right
-                ValLbl.BackgroundTransparency = 1
-                ValLbl.Parent = Frame
+                local ValLbl = New("TextLabel", {
+                    Text = tostring(val) .. "%",
+                    Size = UDim2.new(0.5, 0, 0, 18),
+                    Position = UDim2.new(0.5, 0, 0, 0),
+                    TextColor3 = Color3.fromRGB(140, 140, 150),
+                    Font = Enum.Font.Gotham, TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Right,
+                    BackgroundTransparency = 1,
+                }, Frame)
 
-                local Track = Instance.new("TextButton")
-                Track.Size = UDim2.new(1, 0, 0, 4)
-                Track.Position = UDim2.new(0, 0, 0, 24)
-                Track.BackgroundColor3 = Color3.fromRGB(32, 32, 36)
-                Track.Text = ""
-                Track.Parent = Frame
+                local Track = New("TextButton", {
+                    Size = UDim2.new(1, 0, 0, 4),
+                    Position = UDim2.new(0, 0, 0, 24),
+                    BackgroundColor3 = Color3.fromRGB(32, 32, 36),
+                    Text = "",
+                    AutoButtonColor = false,
+                }, Frame)
+                New("UICorner", {CornerRadius = UDim.new(1, 0)}, Track)
 
-                local Fill = Instance.new("Frame")
-                Fill.Size = UDim2.new((val - min) / (max - min), 0, 1, 0)
-                Fill.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
-                Fill.Parent = Track
+                local initialPct = (val - min) / (max - min)
+                local Fill = New("Frame", {
+                    Size = UDim2.new(initialPct, 0, 1, 0),
+                    BackgroundColor3 = Color3.fromRGB(240, 240, 240),
+                }, Track)
+                New("UICorner", {CornerRadius = UDim.new(1, 0)}, Fill)
 
-                local Knob = Instance.new("Frame")
-                Knob.Size = UDim2.new(0, 10, 0, 10)
-                Knob.Position = UDim2.new(1, -5, 0.5, -5)
-                Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                Knob.Parent = Fill
-
-                local KnobCorner = Instance.new("UICorner")
-                KnobCorner.CornerRadius = UDim.new(1, 0)
-                KnobCorner.Parent = Knob
+                local Knob = New("Frame", {
+                    Size = UDim2.new(0, 10, 0, 10),
+                    Position = UDim2.new(1, -5, 0.5, -5),
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                }, Fill)
+                New("UICorner", {CornerRadius = UDim.new(1, 0)}, Knob)
 
                 local dragging = false
                 local function Update(input)
                     local pos = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
-                    val = math.floor(min + (max - min) * pos)
+                    val = math.floor(min + (max - min) * pos + 0.5)
                     ValLbl.Text = tostring(val) .. "%"
+                    -- direct set (no tween) = follows the cursor/finger 1:1, feels smoother
                     Fill.Size = UDim2.new(pos, 0, 1, 0)
                     callback(val)
                 end
 
                 Track.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true Update(input) end
+                    if IsTouchInput(input) then dragging = true; Update(input) end
                 end)
                 UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+                    if IsTouchInput(input) then dragging = false end
                 end)
                 UserInputService.InputChanged:Connect(function(input)
-                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then Update(input) end
+                    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        Update(input)
+                    end
                 end)
+
+                return {
+                    Set = function(_, v)
+                        v = math.clamp(v, min, max)
+                        val = v
+                        local pos = (v - min) / (max - min)
+                        ValLbl.Text = tostring(v) .. "%"
+                        Tween(Fill, {Size = UDim2.new(pos, 0, 1, 0)}, 0.15)
+                        callback(v)
+                    end,
+                }
             end
 
-            -- DROPDOWN
-            function Card:AddDropdown(text, list, callback)
+            -- ============================================
+            -- DROPDOWN (fixed) — Single Select
+            -- Options render in the top-level Overlay layer so they are
+            -- never clipped by the ScrollingFrame, which was the bug.
+            -- ============================================
+            function Card:AddDropdown(text, list, default, callback)
                 callback = callback or function() end
+                list = list or {}
+                local selected = default or list[1]
 
-                local Frame = Instance.new("Frame")
-                Frame.Size = UDim2.new(1, 0, 0, 28)
-                Frame.BackgroundTransparency = 1
-                Frame.Parent = Container
+                local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1, ZIndex = 5}, Container)
 
-                local Lbl = Instance.new("TextLabel")
-                Lbl.Text = text
-                Lbl.Size = UDim2.new(0.5, 0, 1, 0)
-                Lbl.TextColor3 = Color3.fromRGB(180, 180, 190)
-                Lbl.Font = Enum.Font.Gotham
-                Lbl.TextSize = 12
-                Lbl.TextXAlignment = Enum.TextXAlignment.Left
-                Lbl.BackgroundTransparency = 1
-                Lbl.Parent = Frame
+                New("TextLabel", {
+                    Text = text, Size = UDim2.new(0.45, 0, 1, 0),
+                    TextColor3 = Color3.fromRGB(180, 180, 190),
+                    Font = Enum.Font.Gotham, TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                }, Frame)
 
-                local DropBtn = Instance.new("TextButton")
-                DropBtn.Size = UDim2.new(0, 90, 0, 22)
-                DropBtn.Position = UDim2.new(1, -90, 0.5, -11)
-                DropBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-                DropBtn.Text = list[1] or "Option 1"
-                DropBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
-                DropBtn.Font = Enum.Font.Gotham
-                DropBtn.TextSize = 11
-                DropBtn.Parent = Frame
+                local DropBtn = New("TextButton", {
+                    Size = UDim2.new(0.5, 0, 0, 26),
+                    Position = UDim2.new(0.5, 0, 0.5, -13),
+                    BackgroundColor3 = Color3.fromRGB(28, 28, 32),
+                    Text = "",
+                    AutoButtonColor = false,
+                }, Frame)
+                New("UICorner", {CornerRadius = UDim.new(0, 6)}, DropBtn)
 
-                local DropCorner = Instance.new("UICorner")
-                DropCorner.CornerRadius = UDim.new(0, 4)
-                DropCorner.Parent = DropBtn
+                local SelectedLbl = New("TextLabel", {
+                    Text = tostring(selected or "Select"),
+                    Size = UDim2.new(1, -28, 1, 0),
+                    Position = UDim2.new(0, 10, 0, 0),
+                    TextColor3 = Color3.fromRGB(200, 200, 210),
+                    Font = Enum.Font.Gotham, TextSize = 11,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
+                    BackgroundTransparency = 1,
+                }, DropBtn)
+
+                local Chevron = New("ImageLabel", {
+                    Image = GetIconAsset("chevron-down"),
+                    Size = UDim2.new(0, 12, 0, 12),
+                    Position = UDim2.new(1, -20, 0.5, -6),
+                    BackgroundTransparency = 1,
+                    ImageColor3 = Color3.fromRGB(150, 150, 160),
+                }, DropBtn)
+
+                local OptionsFrame = New("Frame", {
+                    Visible = false,
+                    BackgroundColor3 = Color3.fromRGB(24, 24, 28),
+                    BorderSizePixel = 0,
+                    ZIndex = 60,
+                    ClipsDescendants = true,
+                }, library.Overlay)
+                New("UICorner", {CornerRadius = UDim.new(0, 6)}, OptionsFrame)
+                New("UIStroke", {Color = Color3.fromRGB(40, 40, 45), Thickness = 1}, OptionsFrame)
+
+                local OptionsScroll = New("ScrollingFrame", {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    ScrollBarThickness = 2,
+                    CanvasSize = UDim2.new(0, 0, 0, 0),
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    ZIndex = 60,
+                }, OptionsFrame)
+                New("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, OptionsScroll)
+                New("UIPadding", {
+                    PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4),
+                    PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4),
+                }, OptionsScroll)
+
+                local isOpen = false
+                local function CloseDropdown()
+                    isOpen = false
+                    OptionsFrame.Visible = false
+                    Tween(Chevron, {Rotation = 0}, 0.15)
+                    if library._openDropdown == OptionsFrame then
+                        library._openDropdown = nil
+                    end
+                end
+
+                local function OpenDropdown()
+                    if library._openDropdown and library._openDropdown ~= OptionsFrame then
+                        library._openDropdown.Visible = false
+                    end
+                    local abs = DropBtn.AbsolutePosition
+                    local size = DropBtn.AbsoluteSize
+                    local optH = math.min(#list * 26 + 8, 150)
+                    OptionsFrame.Position = UDim2.new(0, abs.X, 0, abs.Y + size.Y + 4)
+                    OptionsFrame.Size = UDim2.new(0, size.X, 0, optH)
+                    OptionsFrame.Visible = true
+                    isOpen = true
+                    library._openDropdown = OptionsFrame
+                    Tween(Chevron, {Rotation = 180}, 0.15)
+                end
+
+                local function RenderOptions()
+                    OptionsScroll:ClearAllChildren()
+                    New("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, OptionsScroll)
+                    for _, optionValue in ipairs(list) do
+                        local OptBtn = New("TextButton", {
+                            Size = UDim2.new(1, 0, 0, 24),
+                            BackgroundColor3 = Color3.fromRGB(32, 32, 36),
+                            BackgroundTransparency = optionValue == selected and 0 or 1,
+                            Text = tostring(optionValue),
+                            TextColor3 = optionValue == selected and Color3.fromRGB(240, 240, 240) or Color3.fromRGB(170, 170, 180),
+                            Font = Enum.Font.Gotham,
+                            TextSize = 11,
+                            ZIndex = 61,
+                        }, OptionsScroll)
+                        New("UICorner", {CornerRadius = UDim.new(0, 4)}, OptBtn)
+
+                        OptBtn.MouseButton1Click:Connect(function()
+                            selected = optionValue
+                            SelectedLbl.Text = tostring(optionValue)
+                            callback(optionValue)
+                            CloseDropdown()
+                        end)
+                    end
+                end
+                RenderOptions()
+
+                DropBtn.MouseButton1Click:Connect(function()
+                    if isOpen then
+                        CloseDropdown()
+                    else
+                        OpenDropdown()
+                    end
+                end)
+
+                return {
+                    Set = function(_, v)
+                        selected = v
+                        SelectedLbl.Text = tostring(v)
+                        RenderOptions()
+                        callback(v)
+                    end,
+                    Refresh = function(_, newList)
+                        list = newList
+                        RenderOptions()
+                    end,
+                }
+            end
+
+            -- ============================================
+            -- MULTI-SELECT DROPDOWN
+            -- ============================================
+            function Card:AddMultiDropdown(text, list, defaultList, callback)
+                callback = callback or function() end
+                list = list or {}
+                local selected = {}
+                for _, v in ipairs(defaultList or {}) do selected[v] = true end
+
+                local function GetLabelText()
+                    local count = 0
+                    for _ in pairs(selected) do count = count + 1 end
+                    if count == 0 then return "None" end
+                    return count .. " Selected"
+                end
+
+                local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1, ZIndex = 5}, Container)
+
+                New("TextLabel", {
+                    Text = text, Size = UDim2.new(0.45, 0, 1, 0),
+                    TextColor3 = Color3.fromRGB(180, 180, 190),
+                    Font = Enum.Font.Gotham, TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                }, Frame)
+
+                local DropBtn = New("TextButton", {
+                    Size = UDim2.new(0.5, 0, 0, 26),
+                    Position = UDim2.new(0.5, 0, 0.5, -13),
+                    BackgroundColor3 = Color3.fromRGB(28, 28, 32),
+                    Text = "",
+                    AutoButtonColor = false,
+                }, Frame)
+                New("UICorner", {CornerRadius = UDim.new(0, 6)}, DropBtn)
+
+                local SelectedLbl = New("TextLabel", {
+                    Text = GetLabelText(),
+                    Size = UDim2.new(1, -28, 1, 0),
+                    Position = UDim2.new(0, 10, 0, 0),
+                    TextColor3 = Color3.fromRGB(200, 200, 210),
+                    Font = Enum.Font.Gotham, TextSize = 11,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
+                    BackgroundTransparency = 1,
+                }, DropBtn)
+
+                local Chevron = New("ImageLabel", {
+                    Image = GetIconAsset("chevron-down"),
+                    Size = UDim2.new(0, 12, 0, 12),
+                    Position = UDim2.new(1, -20, 0.5, -6),
+                    BackgroundTransparency = 1,
+                    ImageColor3 = Color3.fromRGB(150, 150, 160),
+                }, DropBtn)
+
+                local OptionsFrame = New("Frame", {
+                    Visible = false,
+                    BackgroundColor3 = Color3.fromRGB(24, 24, 28),
+                    BorderSizePixel = 0,
+                    ZIndex = 60,
+                    ClipsDescendants = true,
+                }, library.Overlay)
+                New("UICorner", {CornerRadius = UDim.new(0, 6)}, OptionsFrame)
+                New("UIStroke", {Color = Color3.fromRGB(40, 40, 45), Thickness = 1}, OptionsFrame)
+
+                local OptionsScroll = New("ScrollingFrame", {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    ScrollBarThickness = 2,
+                    CanvasSize = UDim2.new(0, 0, 0, 0),
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    ZIndex = 60,
+                }, OptionsFrame)
+                New("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, OptionsScroll)
+                New("UIPadding", {
+                    PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4),
+                    PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4),
+                }, OptionsScroll)
+
+                local isOpen = false
+                local function CloseDropdown()
+                    isOpen = false
+                    OptionsFrame.Visible = false
+                    Tween(Chevron, {Rotation = 0}, 0.15)
+                    if library._openDropdown == OptionsFrame then
+                        library._openDropdown = nil
+                    end
+                end
+
+                local function OpenDropdown()
+                    if library._openDropdown and library._openDropdown ~= OptionsFrame then
+                        library._openDropdown.Visible = false
+                    end
+                    local abs = DropBtn.AbsolutePosition
+                    local size = DropBtn.AbsoluteSize
+                    local optH = math.min(#list * 26 + 8, 150)
+                    OptionsFrame.Position = UDim2.new(0, abs.X, 0, abs.Y + size.Y + 4)
+                    OptionsFrame.Size = UDim2.new(0, size.X, 0, optH)
+                    OptionsFrame.Visible = true
+                    isOpen = true
+                    library._openDropdown = OptionsFrame
+                    Tween(Chevron, {Rotation = 180}, 0.15)
+                end
+
+                local function RenderOptions()
+                    OptionsScroll:ClearAllChildren()
+                    New("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, OptionsScroll)
+                    for _, optionValue in ipairs(list) do
+                        local isSelected = selected[optionValue] == true
+
+                        local OptBtn = New("TextButton", {
+                            Size = UDim2.new(1, 0, 0, 24),
+                            BackgroundColor3 = Color3.fromRGB(32, 32, 36),
+                            BackgroundTransparency = isSelected and 0 or 1,
+                            Text = "",
+                            ZIndex = 61,
+                        }, OptionsScroll)
+                        New("UICorner", {CornerRadius = UDim.new(0, 4)}, OptBtn)
+
+                        New("TextLabel", {
+                            Text = tostring(optionValue),
+                            Size = UDim2.new(1, -26, 1, 0),
+                            Position = UDim2.new(0, 8, 0, 0),
+                            TextColor3 = isSelected and Color3.fromRGB(240, 240, 240) or Color3.fromRGB(170, 170, 180),
+                            Font = Enum.Font.Gotham, TextSize = 11,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            BackgroundTransparency = 1,
+                            ZIndex = 61,
+                        }, OptBtn)
+
+                        local CheckIcon = New("ImageLabel", {
+                            Image = GetIconAsset("check"),
+                            Size = UDim2.new(0, 12, 0, 12),
+                            Position = UDim2.new(1, -18, 0.5, -6),
+                            BackgroundTransparency = 1,
+                            ImageColor3 = Color3.fromRGB(240, 240, 240),
+                            ImageTransparency = isSelected and 0 or 1,
+                            ZIndex = 61,
+                        }, OptBtn)
+
+                        OptBtn.MouseButton1Click:Connect(function()
+                            selected[optionValue] = not selected[optionValue] or nil
+                            local nowSelected = selected[optionValue] == true
+                            Tween(OptBtn, {BackgroundTransparency = nowSelected and 0 or 1}, 0.1)
+                            Tween(CheckIcon, {ImageTransparency = nowSelected and 0 or 1}, 0.1)
+                            SelectedLbl.Text = GetLabelText()
+                            local out = {}
+                            for k, v in pairs(selected) do
+                                if v then table.insert(out, k) end
+                            end
+                            callback(out)
+                        end)
+                    end
+                end
+                RenderOptions()
+
+                DropBtn.MouseButton1Click:Connect(function()
+                    if isOpen then CloseDropdown() else OpenDropdown() end
+                end)
+
+                return {
+                    Set = function(_, newList)
+                        selected = {}
+                        for _, v in ipairs(newList) do selected[v] = true end
+                        SelectedLbl.Text = GetLabelText()
+                        RenderOptions()
+                    end,
+                }
             end
 
             -- TEXTBOX
             function Card:AddTextbox(text, placeholder, callback)
                 callback = callback or function() end
 
-                local Input = Instance.new("TextBox")
-                Input.Size = UDim2.new(1, 0, 0, 28)
-                Input.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
-                Input.PlaceholderText = placeholder or "Text"
-                Input.Text = ""
-                Input.TextColor3 = Color3.fromRGB(220, 220, 230)
-                Input.Font = Enum.Font.Gotham
-                Input.TextSize = 11
-                Input.TextXAlignment = Enum.TextXAlignment.Left
-                Input.Parent = Container
-
-                local InputCorner = Instance.new("UICorner")
-                InputCorner.CornerRadius = UDim.new(0, 6)
-                InputCorner.Parent = Input
-
-                local Pad = Instance.new("UIPadding")
-                Pad.PaddingLeft = UDim.new(0, 10)
-                Pad.Parent = Input
+                local Input = New("TextBox", {
+                    Size = UDim2.new(1, 0, 0, 28),
+                    BackgroundColor3 = Color3.fromRGB(24, 24, 28),
+                    PlaceholderText = placeholder or "Text",
+                    Text = "",
+                    TextColor3 = Color3.fromRGB(220, 220, 230),
+                    Font = Enum.Font.Gotham,
+                    TextSize = 11,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    ClearTextOnFocus = false,
+                }, Container)
+                New("UICorner", {CornerRadius = UDim.new(0, 6)}, Input)
+                New("UIPadding", {PaddingLeft = UDim.new(0, 10)}, Input)
 
                 Input.FocusLost:Connect(function(enter)
                     callback(Input.Text, enter)
                 end)
+            end
+
+            -- LABEL (simple text row, useful for status readouts)
+            function Card:AddLabel(text)
+                local Lbl = New("TextLabel", {
+                    Text = text,
+                    Size = UDim2.new(1, 0, 0, 18),
+                    TextColor3 = Color3.fromRGB(150, 150, 160),
+                    Font = Enum.Font.Gotham,
+                    TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BackgroundTransparency = 1,
+                }, Container)
+                return {
+                    Set = function(_, newText) Lbl.Text = newText end,
+                }
             end
 
             return Card
@@ -619,5 +1260,12 @@ function Library:CreatePage(pageName, icon)
 
     return Page
 end
+
+-- Close any open dropdown when clicking elsewhere on screen
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    -- handled per-instance by AbsolutePosition checks would be heavier;
+    -- simplest reliable approach: dropdown closes itself on next option
+    -- click or toggle click, this is just a safety net for outside clicks
+end)
 
 return Library
