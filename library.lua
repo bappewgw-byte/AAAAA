@@ -303,7 +303,7 @@ function Library.new(hubName, gameSubTitle)
     local ToggleBtn = New("ImageButton", {
         Name = "ToggleBtn",
         Size = UDim2.new(0, 50, 0, 50),
-        Position = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(0, 20, 0.5, -25),
         BackgroundColor3 = Color3.fromRGB(20, 20, 22),
         Image = "rbxassetid://127242944781300",
         Visible = false,
