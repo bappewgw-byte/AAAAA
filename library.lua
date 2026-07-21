@@ -1004,7 +1004,7 @@ function Library:CreatePage(pageName, icon)
                 local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1, ZIndex = 5}, Container)
 
                 New("TextLabel", {
-                    Text = text, Size = UDim2.new(0.45, 0, 1, 0),
+                    Text = text, Size = UDim2.new(0.35, 0, 1, 0),
                     TextColor3 = Color3.fromRGB(180, 180, 190),
                     Font = Enum.Font.Gotham, TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
@@ -1012,8 +1012,8 @@ function Library:CreatePage(pageName, icon)
                 }, Frame)
 
                 local DropBtn = New("TextButton", {
-                    Size = UDim2.new(0.5, 0, 0, 26),
-                    Position = UDim2.new(0.5, 0, 0.5, -13),
+                    Size = UDim2.new(0.65, 0, 0, 26),
+                    Position = UDim2.new(0.35, 0, 0.5, -13),
                     BackgroundColor3 = Color3.fromRGB(28, 28, 32),
                     Text = "",
                     AutoButtonColor = false,
@@ -1166,7 +1166,7 @@ function Library:CreatePage(pageName, icon)
                 local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1, ZIndex = 5}, Container)
 
                 New("TextLabel", {
-                    Text = text, Size = UDim2.new(0.45, 0, 1, 0),
+                    Text = text, Size = UDim2.new(0.35, 0, 1, 0),
                     TextColor3 = Color3.fromRGB(180, 180, 190),
                     Font = Enum.Font.Gotham, TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
@@ -1174,8 +1174,8 @@ function Library:CreatePage(pageName, icon)
                 }, Frame)
 
                 local DropBtn = New("TextButton", {
-                    Size = UDim2.new(0.5, 0, 0, 26),
-                    Position = UDim2.new(0.5, 0, 0.5, -13),
+                    Size = UDim2.new(0.65, 0, 0, 26),
+                    Position = UDim2.new(0.35, 0, 0.5, -13),
                     BackgroundColor3 = Color3.fromRGB(28, 28, 32),
                     Text = "",
                     AutoButtonColor = false,
@@ -1334,7 +1334,7 @@ function Library:CreatePage(pageName, icon)
                 local Frame = New("Frame", {Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1}, Container)
 
                 New("TextLabel", {
-                    Text = text, Size = UDim2.new(0.45, 0, 1, 0),
+                    Text = text, Size = UDim2.new(0.35, 0, 1, 0),
                     TextColor3 = Color3.fromRGB(180, 180, 190),
                     Font = Enum.Font.Gotham, TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
@@ -1342,8 +1342,8 @@ function Library:CreatePage(pageName, icon)
                 }, Frame)
 
                 local Input = New("TextBox", {
-                    Size = UDim2.new(0.5, 0, 0, 26),
-                    Position = UDim2.new(0.5, 0, 0.5, -13),
+                    Size = UDim2.new(0.65, 0, 0, 26),
+                    Position = UDim2.new(0.35, 0, 0.5, -13),
                     BackgroundColor3 = Color3.fromRGB(24, 24, 28),
                     PlaceholderText = placeholder or "Text",
                     Text = "",
