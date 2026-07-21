@@ -1393,10 +1393,13 @@ function Library:CreatePage(pageName, icon)
                 local Lbl = New("TextLabel", {
                     Text = text,
                     Size = UDim2.new(1, 0, 0, 18),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    TextWrapped = true,
                     TextColor3 = Color3.fromRGB(150, 150, 160),
                     Font = Enum.Font.Gotham,
                     TextSize = 12,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    TextYAlignment = Enum.TextYAlignment.Top,
                     BackgroundTransparency = 1,
                 }, Container)
                 return {
