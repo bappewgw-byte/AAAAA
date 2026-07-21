@@ -481,16 +481,45 @@ function Library.new(hubName, gameSubTitle)
         end
     end)
 
-    New("TextLabel", {
-        Text = LocalPlayer and LocalPlayer.Name or "Player",
+    local realName = LocalPlayer and LocalPlayer.Name or "Player"
+    local hiddenName = string.rep("*", #realName)
+    local isHidden = false
+
+    local NameLbl = New("TextLabel", {
+        Text = realName,
         Size = UDim2.new(1, -60, 0, 20),
-        Position = UDim2.new(0, 60, 0.5, -10),
+        Position = UDim2.new(0, 60, 0.5, -18),
         TextColor3 = Color3.fromRGB(220, 220, 220),
         Font = Enum.Font.GothamBold,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
         BackgroundTransparency = 1,
     }, FooterCard)
+
+    local HideBtn = New("TextButton", {
+        Text = "Hide Username",
+        Size = UDim2.new(1, -60, 0, 15),
+        Position = UDim2.new(0, 60, 0.5, 2),
+        TextColor3 = Color3.fromRGB(150, 150, 160),
+        Font = Enum.Font.Gotham,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundTransparency = 1,
+    }, FooterCard)
+
+    HideBtn.MouseEnter:Connect(function() Tween(HideBtn, {TextColor3 = Color3.fromRGB(200, 200, 210)}, 0.1) end)
+    HideBtn.MouseLeave:Connect(function() Tween(HideBtn, {TextColor3 = Color3.fromRGB(150, 150, 160)}, 0.1) end)
+
+    HideBtn.MouseButton1Click:Connect(function()
+        isHidden = not isHidden
+        if isHidden then
+            NameLbl.Text = hiddenName
+            HideBtn.Text = "Show Username"
+        else
+            NameLbl.Text = realName
+            HideBtn.Text = "Hide Username"
+        end
+    end)
 
     -- MAIN CONTENT (RIGHT)
     local MainContent = New("Frame", {
