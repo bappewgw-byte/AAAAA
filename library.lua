@@ -28,112 +28,60 @@ local Camera = workspace.CurrentCamera
 -- di tabel, otomatis fallback ke icon "circle".
 -- Bisa juga langsung pass "rbxassetid://123456" buat icon custom.
 -- ========================================================
-local Icons = {
-    ["aperture"]="rbxassetid://7733666258",["bug"]="rbxassetid://7733701545",
-    ["settings"]="rbxassetid://7734053495",["settings-2"]="rbxassetid://8997386997",
-    ["crown"]="rbxassetid://7733765398",["coins"]="rbxassetid://7743866529",
-    ["battery"]="rbxassetid://7733674820",["gamepad"]="rbxassetid://7733799901",
-    ["gamepad-2"]="rbxassetid://7733799795",["gift"]="rbxassetid://7733946818",
-    ["globe"]="rbxassetid://7733954760",["hand"]="rbxassetid://7733955740",
-    ["hash"]="rbxassetid://7733955906",["server"]="rbxassetid://7734053426",
-    ["home"]="rbxassetid://7733960981",["image"]="rbxassetid://7733964126",
-    ["infinity"]="rbxassetid://7733964640",["inspect"]="rbxassetid://7733964808",
-    ["alert-triangle"]="rbxassetid://7733658504",["alert-circle"]="rbxassetid://7733658271",
-    ["alert-octagon"]="rbxassetid://7733658335",["pin"]="rbxassetid://8997386648",
-    ["pencil"]="rbxassetid://7734022107",["edit"]="rbxassetid://7733771472",
-    ["edit-2"]="rbxassetid://7733771217",["edit-3"]="rbxassetid://7733771361",
-    ["more-vertical"]="rbxassetid://7734006187",["more-horizontal"]="rbxassetid://7734006080",
-    ["headphones"]="rbxassetid://7733956063",["reply"]="rbxassetid://7734051594",
-    ["bell"]="rbxassetid://7733911828",["bell-off"]="rbxassetid://7733675107",
-    ["bell-plus"]="rbxassetid://7733675181",["bell-minus"]="rbxassetid://7733675028",
-    ["bell-ring"]="rbxassetid://7733675275",["rotate-ccw"]="rbxassetid://7734051861",
-    ["rotate-cw"]="rbxassetid://7734051957",["library"]="rbxassetid://7743869054",
-    ["save"]="rbxassetid://7734052335",["help-circle"]="rbxassetid://7733956210",
-    ["shield"]="rbxassetid://7734056608",["shield-check"]="rbxassetid://7734056411",
-    ["shield-alert"]="rbxassetid://7734056326",["shield-close"]="rbxassetid://7734056470",
-    ["shield-off"]="rbxassetid://7734056540",["phone"]="rbxassetid://7734032056",
-    ["type"]="rbxassetid://7743874740",["sidebar"]="rbxassetid://7734058260",
-    ["arrow-left"]="rbxassetid://7733673136",["arrow-right"]="rbxassetid://7733673345",
-    ["arrow-up"]="rbxassetid://7733673717",["arrow-down"]="rbxassetid://7733672933",
-    ["star"]="rbxassetid://7734068321",["star-half"]="rbxassetid://7734068258",
-    ["smile"]="rbxassetid://7734059095",["frown"]="rbxassetid://7733799591",
-    ["sun"]="rbxassetid://7734068495",["moon"]="rbxassetid://7743870134",
-    ["table"]="rbxassetid://7734073253",["tag"]="rbxassetid://7734075797",
-    ["gem"]="rbxassetid://7733942651",["link"]="rbxassetid://7733978098",
-    ["terminal"]="rbxassetid://7743872929",["share-2"]="rbxassetid://7734053595",
-    ["timer"]="rbxassetid://7743873443",["timer-off"]="rbxassetid://8997388325",
-    ["megaphone"]="rbxassetid://7733993049",["unlock"]="rbxassetid://7743875263",
-    ["lock"]="rbxassetid://7733992528",["camera"]="rbxassetid://7733708692",
-    ["triangle"]="rbxassetid://7743874367",["truck"]="rbxassetid://7743874482",
-    ["network"]="rbxassetid://7734021047",["users"]="rbxassetid://7743876054",
-    ["user"]="rbxassetid://7743875962",["user-check"]="rbxassetid://7743875503",
-    ["user-plus"]="rbxassetid://7743875759",["user-minus"]="rbxassetid://7743875629",
-    ["user-x"]="rbxassetid://7743875879",["book"]="rbxassetid://7733914390",
-    ["book-open"]="rbxassetid://7733687281",["bar-chart"]="rbxassetid://7733674319",
-    ["bar-chart-2"]="rbxassetid://7733674239",["pie-chart"]="rbxassetid://7734034378",
-    ["zoom-in"]="rbxassetid://7743878977",["zoom-out"]="rbxassetid://7743879082",
-    ["ticket"]="rbxassetid://7734086558",["smartphone"]="rbxassetid://7734058979",
-    ["database"]="rbxassetid://7743866778",["plus"]="rbxassetid://7734042071",
-    ["plus-circle"]="rbxassetid://7734040271",["plus-square"]="rbxassetid://7734040369",
-    ["minus"]="rbxassetid://7734000129",["minus-circle"]="rbxassetid://7733998053",
-    ["github"]="rbxassetid://7733954058",["target"]="rbxassetid://7743872758",
-    ["crosshair"]="rbxassetid://7733765307",["x"]="rbxassetid://7743878857",
-    ["x-circle"]="rbxassetid://7743878496",["x-square"]="rbxassetid://7743878737",
-    ["check"]="rbxassetid://7733715400",["check-circle"]="rbxassetid://7733919427",
-    ["check-circle-2"]="rbxassetid://7733710700",["check-square"]="rbxassetid://7733919526",
-    ["download"]="rbxassetid://7733770755",["download-cloud"]="rbxassetid://7733770689",
-    ["upload"]="rbxassetid://7743875428",["upload-cloud"]="rbxassetid://7743875358",
-    ["eye"]="rbxassetid://7733774602",["eye-off"]="rbxassetid://7733774495",
-    ["copy"]="rbxassetid://7733764083",["bot"]="rbxassetid://7733916988",
-    ["maximize"]="rbxassetid://7733992982",["maximize-2"]="rbxassetid://7733992901",
-    ["minimize"]="rbxassetid://7733997941",["minimize-2"]="rbxassetid://7733997870",
-    ["trash"]="rbxassetid://7743873871",["trash-2"]="rbxassetid://7743873772",
-    ["info"]="rbxassetid://7733964719",["flame"]="rbxassetid://7733798747",
-    ["skull"]="rbxassetid://7734058599",["wallet"]="rbxassetid://7743877573",
-    ["layers"]="rbxassetid://7743868936",["layout"]="rbxassetid://7733970543",
-    ["layout-dashboard"]="rbxassetid://7733970318",["layout-grid"]="rbxassetid://7733970390",
-    ["layout-list"]="rbxassetid://7733970442",["list"]="rbxassetid://7743869612",
-    ["list-checks"]="rbxassetid://7743869317",["list-plus"]="rbxassetid://7733984995",
-    ["list-x"]="rbxassetid://7743869517",["filter"]="rbxassetid://7733798407",
-    ["menu"]="rbxassetid://7733993211",["grid"]="rbxassetid://7733955179",
-    ["monitor"]="rbxassetid://7734002839",["gauge"]="rbxassetid://7733799969",
-    ["activity"]="rbxassetid://7733655755",["cloud"]="rbxassetid://7733746980",
-    ["wifi"]="rbxassetid://7743878148",["wifi-off"]="rbxassetid://7743878056",
-    ["bluetooth"]="rbxassetid://7733687147",["volume"]="rbxassetid://7743877487",
-    ["volume-1"]="rbxassetid://7743877081",["volume-2"]="rbxassetid://7743877250",
-    ["volume-x"]="rbxassetid://7743877381",["mic"]="rbxassetid://7743869805",
-    ["mic-off"]="rbxassetid://7743869714",["video"]="rbxassetid://7743876610",
-    ["video-off"]="rbxassetid://7743876466",["play"]="rbxassetid://7743871480",
-    ["play-circle"]="rbxassetid://7734037784",["pause"]="rbxassetid://7734021897",
-    ["pause-circle"]="rbxassetid://7734021767",["folder"]="rbxassetid://7733799185",
-    ["folder-plus"]="rbxassetid://7733799092",["folder-minus"]="rbxassetid://7733799022",
-    ["folder-open"]="rbxassetid://8997386062",["file"]="rbxassetid://7733793319",
-    ["file-plus"]="rbxassetid://7733788885",["file-text"]="rbxassetid://7733789088",
-    ["calendar"]="rbxassetid://7733919198",["clock"]="rbxassetid://7733734848",
-    ["map-pin"]="rbxassetid://7733992789",["navigation"]="rbxassetid://7734020989",
-    ["compass"]="rbxassetid://7733924216",["code"]="rbxassetid://7733749837",
-    ["code-2"]="rbxassetid://7733920644",["hammer"]="rbxassetid://7733955511",
-    ["axe"]="rbxassetid://7733674079",["shirt"]="rbxassetid://7734056672",
-    ["wrench"]="rbxassetid://7743878358",["sliders"]="rbxassetid://7734058803",
-    ["toggle-left"]="rbxassetid://7734091286",["toggle-right"]="rbxassetid://7743873539",
-    ["refresh-cw"]="rbxassetid://7734051052",["refresh-ccw"]="rbxassetid://7734050715",
-    ["search"]="rbxassetid://7734052925",["mail"]="rbxassetid://7733992732",
-    ["send"]="rbxassetid://7734053039",["log-in"]="rbxassetid://7733992604",
-    ["log-out"]="rbxassetid://7733992677",["power"]="rbxassetid://7734042493",
-    ["power-off"]="rbxassetid://7734042423",["circle"]="rbxassetid://7733919881",
-    ["square"]="rbxassetid://7743872181",["hexagon"]="rbxassetid://7743868527",
-    ["chevron-down"]="rbxassetid://7733717447",["chevron-up"]="rbxassetid://7733919605",
-    ["chevron-left"]="rbxassetid://7733717651",["chevron-right"]="rbxassetid://7733717755",
-    ["chevrons-up-down"]="rbxassetid://7733723321",["move"]="rbxassetid://7743870731",
-    ["grip-horizontal"]="rbxassetid://7733955302",["grip-vertical"]="rbxassetid://7733955410",
-}
+local FetchIcons, Icons = pcall(function()
+    return (loadstring(
+        game:HttpGet("https://raw.githubusercontent.com/deividcomsono/lucide-roblox-direct/refs/heads/main/source.lua")
+    ))()
+end)
 
-local function GetIconAsset(name)
-    if not name then return nil end
-    if typeof(name) == "string" and name:sub(1, 13) == "rbxassetid://" then
-        return name
+local function GetLucideIcon(IconName)
+    if not FetchIcons then return nil end
+    local Success, Icon = pcall(Icons.GetAsset, IconName)
+    if Success then return Icon end
+    return nil
+end
+
+local function IsCustomAssetIcon(Icon, IncludeAssetId)
+    return typeof(Icon) == "string" and (Icon:match("^content://") or Icon:match("^rbxasset://%x+/") or (IncludeAssetId == true and Icon:match("^rbxassetid://")))
+end
+
+local function IsValidCustomIcon(Icon)
+    return typeof(Icon) == "string" and (Icon:match("^rbxasset://textures/") or Icon:match("roblox%.com/asset/%?id=") or Icon:match("rbxthumb://type="))
+end
+
+local function GetIconData(IconName)
+    if not IconName then return nil end
+    if tonumber(IconName) then
+        IconName = string.format("rbxassetid://%s", tostring(IconName))
     end
-    return Icons[name] or Icons["circle"]
+
+    if IsCustomAssetIcon(IconName, true) then
+        return { Url = IconName }
+    elseif IsValidCustomIcon(IconName) then
+        return { Url = IconName, Custom = true }
+    end
+
+    local LucideIcon = GetLucideIcon(IconName)
+    if LucideIcon then return LucideIcon end
+
+    return GetLucideIcon("circle") -- fallback
+end
+
+local function ApplyIcon(imageLabel, iconName)
+    local iconData = GetIconData(iconName)
+    if iconData then
+        imageLabel.Image = iconData.Url or ""
+        if iconData.ImageRectOffset then
+            imageLabel.ImageRectOffset = iconData.ImageRectOffset
+        else
+            imageLabel.ImageRectOffset = Vector2.zero
+        end
+        if iconData.ImageRectSize then
+            imageLabel.ImageRectSize = iconData.ImageRectSize
+        else
+            imageLabel.ImageRectSize = Vector2.zero
+        end
+    end
 end
 
 -- ========================================================
@@ -548,14 +496,14 @@ function Library.new(hubName, gameSubTitle)
         Text = "",
         ZIndex = 20,
     }, MainFrame)
-    New("ImageLabel", {
-        Image = GetIconAsset("move-diagonal-2") or GetIconAsset("move"),
+    local ResizeImg = New("ImageLabel", {
         Size = UDim2.new(0, 14, 0, 14),
         Position = UDim2.new(0, 2, 0, 2),
         BackgroundTransparency = 1,
         ImageColor3 = Color3.fromRGB(90, 90, 98),
         ImageTransparency = 0.2,
     }, ResizeHandle)
+    ApplyIcon(ResizeImg, "move-diagonal-2")
     MakeResizable(MainFrame, ResizeHandle, Vector2.new(480, 340), Vector2.new(980, 740))
 
     self.Gui = ScreenGui
@@ -625,13 +573,13 @@ function Library:Notify(title, text, duration, icon)
     }, Toast)
 
     if icon then
-        New("ImageLabel", {
-            Image = GetIconAsset(icon),
+        local IconImg = New("ImageLabel", {
             Size = UDim2.new(0, 18, 0, 18),
             Position = UDim2.new(0, 0, 0, 0),
             BackgroundTransparency = 1,
             ImageColor3 = Color3.fromRGB(240, 240, 240),
         }, Toast)
+        ApplyIcon(IconImg, icon)
     end
 
     local TextOffset = icon and 26 or 0
@@ -700,16 +648,15 @@ function Library:CreatePage(pageName, icon)
     }, self.NavContainer)
     New("UICorner", {CornerRadius = UDim.new(0, 8)}, PageBtn)
 
-    local iconAsset = GetIconAsset(icon)
     local IconImg
-    if iconAsset then
+    if icon then
         IconImg = New("ImageLabel", {
-            Image = iconAsset,
             Size = UDim2.new(0, 16, 0, 16),
             Position = UDim2.new(0, 12, 0.5, -8),
             BackgroundTransparency = 1,
             ImageColor3 = Color3.fromRGB(120, 120, 130),
         }, PageBtn)
+        ApplyIcon(IconImg, icon)
     end
 
     local PageLabel = New("TextLabel", {
@@ -855,13 +802,13 @@ function Library:CreatePage(pageName, icon)
             local headerOffset = 12
             if cardIcon then
                 headerOffset = 32
-                New("ImageLabel", {
-                    Image = GetIconAsset(cardIcon),
+                local IconImg = New("ImageLabel", {
                     Size = UDim2.new(0, 15, 0, 15),
                     Position = UDim2.new(0, 12, 0, 10),
                     BackgroundTransparency = 1,
                     ImageColor3 = Color3.fromRGB(160, 160, 170),
                 }, CardFrame)
+                ApplyIcon(IconImg, cardIcon)
             end
 
             New("TextLabel", {
@@ -1083,12 +1030,12 @@ function Library:CreatePage(pageName, icon)
                 }, DropBtn)
 
                 local Chevron = New("ImageLabel", {
-                    Image = GetIconAsset("chevron-down"),
                     Size = UDim2.new(0, 12, 0, 12),
                     Position = UDim2.new(1, -20, 0.5, -6),
                     BackgroundTransparency = 1,
                     ImageColor3 = Color3.fromRGB(150, 150, 160),
                 }, DropBtn)
+                ApplyIcon(Chevron, "chevron-down")
 
                 local OptionsFrame = New("Frame", {
                     Visible = false,
@@ -1245,12 +1192,12 @@ function Library:CreatePage(pageName, icon)
                 }, DropBtn)
 
                 local Chevron = New("ImageLabel", {
-                    Image = GetIconAsset("chevron-down"),
                     Size = UDim2.new(0, 12, 0, 12),
                     Position = UDim2.new(1, -20, 0.5, -6),
                     BackgroundTransparency = 1,
                     ImageColor3 = Color3.fromRGB(150, 150, 160),
                 }, DropBtn)
+                ApplyIcon(Chevron, "chevron-down")
 
                 local OptionsFrame = New("Frame", {
                     Visible = false,
@@ -1336,7 +1283,6 @@ function Library:CreatePage(pageName, icon)
                         }, OptBtn)
 
                         local CheckIcon = New("ImageLabel", {
-                            Image = GetIconAsset("check"),
                             Size = UDim2.new(0, 12, 0, 12),
                             Position = UDim2.new(1, -18, 0.5, -6),
                             BackgroundTransparency = 1,
@@ -1344,6 +1290,7 @@ function Library:CreatePage(pageName, icon)
                             ImageTransparency = isSelected and 0 or 1,
                             ZIndex = 61,
                         }, OptBtn)
+                        ApplyIcon(CheckIcon, "check")
 
                         OptBtn.MouseButton1Click:Connect(function()
                             selected[optionValue] = not selected[optionValue] or nil
