@@ -679,9 +679,14 @@ function Library:CreatePage(pageName, icon)
     }, self.MainContent)
 
     -- Sub-Tabs Bar (Pills)
-    local SubTabBar = New("Frame", {
+    local SubTabBar = New("ScrollingFrame", {
         Size = UDim2.new(1, 0, 0, 32),
         BackgroundColor3 = Color3.fromRGB(18, 18, 20),
+        ScrollingDirection = Enum.ScrollingDirection.X,
+        ScrollBarThickness = 0,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.X,
+        ClipsDescendants = true,
     }, PageFrame)
     New("UICorner", {CornerRadius = UDim.new(0, 8)}, SubTabBar)
     New("UIListLayout", {
