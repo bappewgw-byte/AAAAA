@@ -23,43 +23,6 @@ local GuiService = game:GetService("GuiService")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
-local ThemeManager = {
-    Objects = {},
-    CurrentTheme = {
-        Background = Color3.fromRGB(12, 12, 14),
-        Container = Color3.fromRGB(16, 16, 18),
-        Card = Color3.fromRGB(18, 18, 20),
-        Element = Color3.fromRGB(24, 24, 28),
-        ElementHover = Color3.fromRGB(35, 35, 40),
-        Accent = Color3.fromRGB(0, 170, 255),
-        Text = Color3.fromRGB(240, 240, 240),
-        SubText = Color3.fromRGB(180, 180, 190),
-        Muted = Color3.fromRGB(150, 150, 160),
-        Stroke = Color3.fromRGB(40, 40, 45)
-    }
-}
-function ThemeManager:Bind(instance, property, colorType)
-    table.insert(self.Objects, {Instance = instance, Property = property, Type = colorType})
-    if self.CurrentTheme[colorType] then
-        instance[property] = self.CurrentTheme[colorType]
-    end
-end
-function ThemeManager:SetTheme(themeTable)
-    if type(themeTable) == "table" then
-        for k, v in pairs(themeTable) do
-            self.CurrentTheme[k] = v
-        end
-        for _, obj in ipairs(self.Objects) do
-            if obj.Instance and obj.Instance.Parent then
-                if self.CurrentTheme[obj.Type] then
-                    TweenService:Create(obj.Instance, TweenInfo.new(0.3), {[obj.Property] = self.CurrentTheme[obj.Type]}):Play()
-                end
-            end
-        end
-    end
-end
-Library.ThemeManager = ThemeManager
-
 -- ========================================================
 -- ICONS (Lucide -> rbxassetid, community port)
 -- Pakai: Icon("home"), Icon("settings"), dst. Kalau nama gak ada
@@ -127,15 +90,7 @@ end
 -- ========================================================
 local function Tween(instance, properties, duration, style)
     duration = duration or 0.2
-    local resolvedProps = {}
-    for k, v in pairs(properties) do
-        if type(v) == "string" and v:match("^Theme:") then
-            resolvedProps[k] = ThemeManager.CurrentTheme[v:sub(7)]
-        else
-            resolvedProps[k] = v
-        end
-    end
-    local tween = TweenService:Create(instance, TweenInfo.new(duration, style or Enum.EasingStyle.Quad, Enum.EasingDirection.Out), resolvedProps)
+    local tween = TweenService:Create(instance, TweenInfo.new(duration, style or Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
     tween:Play()
     return tween
 end
@@ -146,18 +101,10 @@ end
 
 local function New(class, props, parent)
     local inst = Instance.new(class)
-    local themeBindings = {}
     for k, v in pairs(props or {}) do
-        if type(v) == "string" and v:match("^Theme:") then
-            themeBindings[k] = v:sub(7)
-        else
-            inst[k] = v
-        end
+        inst[k] = v
     end
     if parent then inst.Parent = parent end
-    for prop, colorType in pairs(themeBindings) do
-        ThemeManager:Bind(inst, prop, colorType)
-    end
     return inst
 end
 
@@ -1035,6 +982,7 @@ function Library:CreatePage(pageName, icon)
 
             New("UIPadding", {PaddingBottom = UDim.new(0, 12)}, Container)
 
+            -- TOGGLE
             function Card:AddToggle(text, default, callback)
                 callback = callback or function() end
                 local state = default or false
@@ -1050,43 +998,35 @@ function Library:CreatePage(pageName, icon)
                 }, Frame)
 
                 local Box = New("TextButton", {
-                    Size = UDim2.new(0, 32, 0, 16),
-                    Position = UDim2.new(1, -32, 0.5, -8),
-                    BackgroundColor3 = state and "Theme:Accent" or "Theme:ElementHover",
+                    Size = UDim2.new(0, 16, 0, 16),
+                    Position = UDim2.new(1, -16, 0.5, -8),
+                    BackgroundColor3 = "Theme:Element",
                     Text = "",
-                    AutoButtonColor = false,
                 }, Frame)
-                New("UICorner", {CornerRadius = UDim.new(1, 0)}, Box)
+                New("UICorner", {CornerRadius = UDim.new(0, 4)}, Box)
                 
+                Box.MouseEnter:Connect(function() Tween(Box, {BackgroundColor3 = "Theme:ElementHover"}, 0.15) end)
+                Box.MouseLeave:Connect(function() Tween(Box, {BackgroundColor3 = "Theme:Element"}, 0.15) end)
+
+
                 local Check = New("Frame", {
-                    Size = UDim2.new(0, 12, 0, 12),
-                    Position = state and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6),
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    Size = UDim2.new(1, -4, 1, -4),
+                    Position = UDim2.new(0, 2, 0, 2),
+                    BackgroundColor3 = "Theme:Text",
+                    BackgroundTransparency = state and 0 or 1,
                 }, Box)
-                New("UICorner", {CornerRadius = UDim.new(1, 0)}, Check)
+                New("UICorner", {CornerRadius = UDim.new(0, 2)}, Check)
 
                 Box.MouseButton1Click:Connect(function()
                     state = not state
-                    if state then
-                        Tween(Box, {BackgroundColor3 = "Theme:Accent"}, 0.2)
-                        Tween(Check, {Position = UDim2.new(1, -14, 0.5, -6)}, 0.2)
-                    else
-                        Tween(Box, {BackgroundColor3 = "Theme:ElementHover"}, 0.2)
-                        Tween(Check, {Position = UDim2.new(0, 2, 0.5, -6)}, 0.2)
-                    end
+                    Tween(Check, {BackgroundTransparency = state and 0 or 1})
                     callback(state)
                 end)
 
                 return {
                     Set = function(_, v)
                         state = v
-                        if state then
-                            Tween(Box, {BackgroundColor3 = "Theme:Accent"}, 0.2)
-                            Tween(Check, {Position = UDim2.new(1, -14, 0.5, -6)}, 0.2)
-                        else
-                            Tween(Box, {BackgroundColor3 = "Theme:ElementHover"}, 0.2)
-                            Tween(Check, {Position = UDim2.new(0, 2, 0.5, -6)}, 0.2)
-                        end
+                        Check.BackgroundTransparency = state and 0 or 1
                         callback(state)
                     end,
                 }

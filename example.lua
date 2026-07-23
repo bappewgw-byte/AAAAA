@@ -205,5 +205,43 @@ ConfigCard:AddButton("Delete Config", function()
     end
 end)
 
+-- ====================
+-- Settings Page
+local Page2 = Window:CreatePage("Settings", "settings")
+
+local ThemeTab = Page2:CreateSubTab("Themes")
+local ThemeCard = ThemeTab:CreateCard("Theme Engine", "palette")
+
+local ThemesList = {"Default", "Ocean", "Dracula", "Midnight"}
+local SelectedTheme = "Default"
+
+-- Mengambil konfigurasi tema dari Github
+local success, Themes = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/bappewgw-byte/AAAAA/main/themes.lua"))()
+end)
+if not success or type(Themes) ~= "table" then
+    Themes = {} -- Fallback jika gagal fetch
+end
+
+ThemeCard:AddDropdown("Select Theme", ThemesList, "Default", function(selected)
+    SelectedTheme = selected
+end)
+
+ThemeCard:AddButton("Set Theme", function()
+    if Themes[SelectedTheme] then
+        Library.ThemeManager:SetTheme(Themes[SelectedTheme])
+        Window:Notify("Theme Manager", "Tema berhasil diubah ke " .. SelectedTheme, 3, "brush")
+    else
+        Window:Notify("Theme Error", "Gagal memuat tema " .. SelectedTheme, 3, "x")
+    end
+end)
+
+ThemeCard:AddButton("Reset Theme (Default)", function()
+    if Themes["Default"] then
+        Library.ThemeManager:SetTheme(Themes["Default"])
+        Window:Notify("Theme Manager", "Tema di-reset ke Default", 3, "rotate-ccw")
+    end
+end)
+
 -- Notifikasi
 Window:Notify("Welcome Sir", "Script berhasil dimuat", 4, "gamepad-2")
