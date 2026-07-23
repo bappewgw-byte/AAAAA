@@ -770,15 +770,7 @@ end
 
 -- ADD CATEGORY LABEL TO SIDEBAR
 function Library:AddCategory(categoryName)
-    New("TextLabel", {
-        Text = categoryName,
-        Size = UDim2.new(1, 0, 0, 24),
-        TextColor3 = Color3.fromRGB(100, 100, 110),
-        Font = Enum.Font.GothamBold,
-        TextSize = 11,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        BackgroundTransparency = 1,
-    }, self.NavContainer)
+    -- Disabled / Deprecated per user request. Kept for backward compatibility so scripts don't break.
 end
 
 -- ========================================================
@@ -1201,8 +1193,23 @@ function Library:CreatePage(pageName, icon)
                 New("UICorner", {CornerRadius = UDim.new(0, 6)}, OptionsFrame)
                 New("UIStroke", {Color = Color3.fromRGB(40, 40, 45), Thickness = 1}, OptionsFrame)
 
+                local SearchBox = New("TextBox", {
+                    Size = UDim2.new(1, -8, 0, 26),
+                    Position = UDim2.new(0, 4, 0, 4),
+                    BackgroundColor3 = Color3.fromRGB(18, 18, 22),
+                    PlaceholderText = "Search...",
+                    Text = "",
+                    TextColor3 = Color3.fromRGB(220, 220, 230),
+                    Font = Enum.Font.Gotham,
+                    TextSize = 11,
+                    ClearTextOnFocus = false,
+                    ZIndex = 61,
+                }, OptionsFrame)
+                New("UICorner", {CornerRadius = UDim.new(0, 4)}, SearchBox)
+
                 local OptionsScroll = New("ScrollingFrame", {
-                    Size = UDim2.new(1, 0, 1, 0),
+                    Size = UDim2.new(1, 0, 1, -34),
+                    Position = UDim2.new(0, 0, 0, 34),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
                     ScrollBarThickness = 2,
@@ -1237,7 +1244,14 @@ function Library:CreatePage(pageName, icon)
                     if library._openDropdown and library._openDropdown ~= OptionsFrame and library._openDropdownClose then
                         library._openDropdownClose()
                     end
-                    local optH = math.min(#list * 26 + 8, 150)
+                    SearchBox.Text = "" -- Reset search when opened
+                    local visibleItems = 0
+                    for _, child in ipairs(OptionsScroll:GetChildren()) do
+                        if child:IsA("TextButton") and child.Visible then
+                            visibleItems = visibleItems + 1
+                        end
+                    end
+                    local optH = math.min(visibleItems * 26 + 42, 200)
                     OptionsFrame.Visible = true
                     isOpen = true
                     library._openDropdown = OptionsFrame
@@ -1273,6 +1287,26 @@ function Library:CreatePage(pageName, icon)
                     end
                 end
                 RenderOptions()
+
+                SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                    local query = string.lower(SearchBox.Text)
+                    local visibleItems = 0
+                    for _, child in ipairs(OptionsScroll:GetChildren()) do
+                        if child:IsA("TextButton") then
+                            if query == "" or string.find(string.lower(child.Text), query, 1, true) then
+                                child.Visible = true
+                                visibleItems = visibleItems + 1
+                            else
+                                child.Visible = false
+                            end
+                        end
+                    end
+                    if isOpen and followConn then
+                        local optH = math.min(visibleItems * 26 + 42, 200)
+                        followConn:Disconnect()
+                        followConn = FollowAnchor(OptionsFrame, DropBtn, optH)
+                    end
+                end)
 
                 DropBtn.MouseButton1Click:Connect(function()
                     if isOpen then
@@ -1363,8 +1397,23 @@ function Library:CreatePage(pageName, icon)
                 New("UICorner", {CornerRadius = UDim.new(0, 6)}, OptionsFrame)
                 New("UIStroke", {Color = Color3.fromRGB(40, 40, 45), Thickness = 1}, OptionsFrame)
 
+                local SearchBox = New("TextBox", {
+                    Size = UDim2.new(1, -8, 0, 26),
+                    Position = UDim2.new(0, 4, 0, 4),
+                    BackgroundColor3 = Color3.fromRGB(18, 18, 22),
+                    PlaceholderText = "Search...",
+                    Text = "",
+                    TextColor3 = Color3.fromRGB(220, 220, 230),
+                    Font = Enum.Font.Gotham,
+                    TextSize = 11,
+                    ClearTextOnFocus = false,
+                    ZIndex = 61,
+                }, OptionsFrame)
+                New("UICorner", {CornerRadius = UDim.new(0, 4)}, SearchBox)
+
                 local OptionsScroll = New("ScrollingFrame", {
-                    Size = UDim2.new(1, 0, 1, 0),
+                    Size = UDim2.new(1, 0, 1, -34),
+                    Position = UDim2.new(0, 0, 0, 34),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
                     ScrollBarThickness = 2,
@@ -1399,7 +1448,14 @@ function Library:CreatePage(pageName, icon)
                     if library._openDropdown and library._openDropdown ~= OptionsFrame and library._openDropdownClose then
                         library._openDropdownClose()
                     end
-                    local optH = math.min(#list * 26 + 8, 150)
+                    SearchBox.Text = "" -- Reset search when opened
+                    local visibleItems = 0
+                    for _, child in ipairs(OptionsScroll:GetChildren()) do
+                        if child:IsA("TextButton") and child.Visible then
+                            visibleItems = visibleItems + 1
+                        end
+                    end
+                    local optH = math.min(visibleItems * 26 + 42, 200)
                     OptionsFrame.Visible = true
                     isOpen = true
                     library._openDropdown = OptionsFrame
@@ -1425,7 +1481,7 @@ function Library:CreatePage(pageName, icon)
                         }, OptionsScroll)
                         New("UICorner", {CornerRadius = UDim.new(0, 4)}, OptBtn)
 
-                        New("TextLabel", {
+                        local Label = New("TextLabel", {
                             Text = tostring(optionValue),
                             Size = UDim2.new(1, -26, 1, 0),
                             Position = UDim2.new(0, 8, 0, 0),
@@ -1451,6 +1507,7 @@ function Library:CreatePage(pageName, icon)
                             local nowSelected = selected[optionValue] == true
                             Tween(OptBtn, {BackgroundTransparency = nowSelected and 0 or 1}, 0.1)
                             Tween(CheckIcon, {ImageTransparency = nowSelected and 0 or 1}, 0.1)
+                            Label.TextColor3 = nowSelected and Color3.fromRGB(240, 240, 240) or Color3.fromRGB(170, 170, 180)
                             SelectedLbl.Text = GetLabelText()
                             local out = {}
                             for k, v in pairs(selected) do
@@ -1461,6 +1518,28 @@ function Library:CreatePage(pageName, icon)
                     end
                 end
                 RenderOptions()
+
+                SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+                    local query = string.lower(SearchBox.Text)
+                    local visibleItems = 0
+                    for _, child in ipairs(OptionsScroll:GetChildren()) do
+                        if child:IsA("TextButton") then
+                            local label = child:FindFirstChildOfClass("TextLabel")
+                            local matchText = label and label.Text or child.Text
+                            if query == "" or string.find(string.lower(matchText), query, 1, true) then
+                                child.Visible = true
+                                visibleItems = visibleItems + 1
+                            else
+                                child.Visible = false
+                            end
+                        end
+                    end
+                    if isOpen and followConn then
+                        local optH = math.min(visibleItems * 26 + 42, 200)
+                        followConn:Disconnect()
+                        followConn = FollowAnchor(OptionsFrame, DropBtn, optH)
+                    end
+                end)
 
                 DropBtn.MouseButton1Click:Connect(function()
                     if isOpen then CloseDropdown() else OpenDropdown() end

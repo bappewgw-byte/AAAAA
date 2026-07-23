@@ -30,19 +30,16 @@ local Window = Library.new({
     Name = "Fernove",
     SubTitle = "Premium",
     KeySystem = true,
-    KeySettings = {
+    --[[KeySettings = {
         Title = "Fernove Key System",
         Description = "Please enter your access key to continue.",
-        Key = {"Hello", "World123"},
+        Key = {"123", "World123"},
         Link = "https://example.com/getkey",
-    }
+        }]]--
 })
--- =====================
--- Category
-Window:AddCategory("Category")
 -- ====================
 -- Page
-local Page1 = Window:CreatePage("Home", "home")
+local Page1 = Window:CreatePage("Home", "house")
 -- ====================
 -- Tabs Index
 local MenuSub1 = Page1:CreateSubTab("Tabs 1")
@@ -50,13 +47,13 @@ local MenuSub2 = Page1:CreateSubTab("Tabs 2")
 local MenuSub3 = Page1:CreateSubTab("Tabs 3")
 -- ====================
 -- Card Container di dalam Combat Sub-Tab
-local ExampleCard = MenuSub1:CreateCard("Example 1", "target")
+local ExampleCard = MenuSub1:CreateCard("Example 1", "atom")
 
 -- Table untuk menyimpan reference ke UI Elements agar bisa di-Set() saat Load Config
 local Elements = {}
 
 -- Toggle
-Elements["AutoFarm"] = ExampleCard:AddToggle("Auto Farm", false, function(val)
+Elements["AutoFarm"] = ExampleCard:AddToggle("Enable Toggle", false, function(val)
     ConfigData["AutoFarm"] = val
     print("Auto Farm:", val)
 end)
@@ -67,13 +64,13 @@ ExampleCard:AddButton("Button", function()
 end)
 
 -- Slider
-Elements["FarmSpeed"] = ExampleCard:AddSlider("Farm Speed", 0, 100, 50, function(val)
+Elements["FarmSpeed"] = ExampleCard:AddSlider("Example Slider", 0, 100, 50, function(val)
     ConfigData["FarmSpeed"] = val
     print("Farm Speed:", val)
 end)
 
 -- Dropdown Single Select
-Elements["Weapon"] = ExampleCard:AddDropdown("Weapon", {"Sword", "Bow", "Magic"}, "Sword", function(selected)
+Elements["Weapon"] = ExampleCard:AddDropdown("Single Dropdown", {"Sword", "Bow", "Magic"}, "Sword", function(selected)
     ConfigData["Weapon"] = selected
     print("Weapon Selected:", selected)
 end)
@@ -88,11 +85,11 @@ Elements["MultiDrop1"] = ExampleCard:AddMultiDropdown("Multi Dropdown", {"Option
 end)
 
 -- Textbox
-Elements["TextConfig"] = ExampleCard:AddTextbox("Example Text", "Enter text...", function(txt)
+Elements["TextConfig"] = ExampleCard:AddTextbox("Input Text", "Enter text...", function(txt)
     print("Input:", txt)
 end)
 
-Elements["DelayConfig"] = ExampleCard:AddTextbox("Example Delay", "Masukkan angka...", function(txt)
+Elements["DelayConfig"] = ExampleCard:AddTextbox("Input Number", "Masukkan angka...", function(txt)
     local angkaDelay = tonumber(txt)
 
     if angkaDelay then
@@ -105,19 +102,18 @@ Elements["DelayConfig"] = ExampleCard:AddTextbox("Example Delay", "Masukkan angk
 end)
 
 -- Label
-ExampleCard:AddLabel("Status: Idle")
+ExampleCard:AddLabel("Example Label")
 
-local ExampleCard2 = MenuSub2:CreateCard("Example 2", "target")
-local ExampleCard3 = MenuSub3:CreateCard("Example 3", "target")
+local ExampleCard2 = MenuSub2:CreateCard("Example 2", "atom")
+local ExampleCard3 = MenuSub3:CreateCard("Example 3", "atom")
 
 -- ========================================================================
 -- Settings Page
-Window:AddCategory("Settings")
 local SettingsPage = Window:CreatePage("Settings", "settings")
 local GeneralSub = SettingsPage:CreateSubTab("General")
 
 -- Preferences Card
-local GeneralCard = GeneralSub:CreateCard("Preferences", "sliders")
+local GeneralCard = GeneralSub:CreateCard("Preferences", "settings-2")
 
 GeneralCard:AddSlider("UI Size", 50, 150, 100, function(val)
     if Window.SetScale then
@@ -125,21 +121,31 @@ GeneralCard:AddSlider("UI Size", 50, 150, 100, function(val)
     end
 end)
 
+GeneralCard:AddButton("Copy Place ID", function()
+    setclipboard(tostring(game.PlaceId))
+	Window:Notify("Place ID", "Coppied Success", 2, "copy")
+end)
+
+GeneralCard:AddButton("Copy Game ID", function()
+    setclipboard(tostring(game.GameId))
+	Window:Notify("Game ID", "Coppied Success", 2, "copy")
+end)
+
 -- Config Manager Card
 local ConfigCard = GeneralSub:CreateCard("Config Manager", "folder")
 local ConfigName = "MyConfig"
 local SelectedConfig = "None"
 
-ConfigCard:AddTextbox("Masukan nama config", "Nama config...", function(txt)
+ConfigCard:AddTextbox("Config Name", "", function(txt)
     ConfigName = txt
 end)
 
-ConfigCard:AddButton("Simpan Config", function()
+ConfigCard:AddButton("Save Config", function()
     if ConfigName ~= "" and writefile then
         local HttpService = game:GetService("HttpService")
         local json = HttpService:JSONEncode(ConfigData)
         writefile(ConfigFolder .. "/" .. ConfigName .. ".json", json)
-        Window:Notify("Config", "Berhasil menyimpan: " .. ConfigName, 3, "check-circle")
+        Window:Notify("Config", "Saved: " .. ConfigName, 3, "check-circle")
     end
 end)
 
