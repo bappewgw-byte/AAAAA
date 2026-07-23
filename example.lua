@@ -26,7 +26,17 @@ end
 
 -- ====================
 -- Window
-local Window = Library.new("Fernove", "Premium")
+local Window = Library.new({
+    Name = "Fernove",
+    SubTitle = "Premium",
+    KeySystem = true,
+    KeySettings = {
+        Title = "Fernove Key System",
+        Description = "Please enter your access key to continue.",
+        Key = {"Hello", "World123"},
+        Link = "https://example.com/getkey",
+    }
+})
 -- =====================
 -- Category
 Window:AddCategory("Category")

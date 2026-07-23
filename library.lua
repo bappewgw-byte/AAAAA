@@ -18,6 +18,7 @@ Library.__index = Library
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -192,8 +193,15 @@ end
 -- ========================================================
 -- LIBRARY.NEW
 -- ========================================================
-function Library.new(hubName, gameSubTitle)
+function Library.new(options, gameSubTitle)
+    if type(options) == "string" then
+        options = { Name = options, SubTitle = gameSubTitle }
+    end
+    local hubName = options.Name or "Hub"
+    gameSubTitle = options.SubTitle or ""
+
     local self = setmetatable({}, Library)
+    self.Options = options
 
     local parentTarget
     if gethui then
@@ -203,15 +211,20 @@ function Library.new(hubName, gameSubTitle)
         syn.protect_gui(gui)
         parentTarget = CoreGui
     else
-        parentTarget = CoreGui or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        parentTarget = CoreGui or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
     end
 
+    local guiName = options.GuiName or HttpService:GenerateGUID(false)
+
+    if parentTarget:FindFirstChild(guiName) then
+        parentTarget[guiName]:Destroy()
+    end
     if parentTarget:FindFirstChild("GenerousUI") then
         parentTarget.GenerousUI:Destroy()
     end
 
     local ScreenGui = New("ScreenGui", {
-        Name = "GenerousUI",
+        Name = guiName,
         ResetOnSpawn = false,
         IgnoreGuiInset = true,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
@@ -545,6 +558,142 @@ function Library.new(hubName, gameSubTitle)
 
     self.SetScale = function(_, val)
         Tween(UIScaleObj, {Scale = val}, 0.2)
+    end
+
+    if options.KeySystem then
+        MainFrame.Visible = false
+        
+        local KeyFrame = New("Frame", {
+            Name = "KeyFrame",
+            Size = UDim2.new(0, 400, 0, 250),
+            Position = UDim2.new(0.5, -200, 0.5, -125),
+            BackgroundColor3 = Color3.fromRGB(16, 16, 18),
+            BorderSizePixel = 0,
+            ZIndex = 200,
+        }, ScreenGui)
+        New("UICorner", {CornerRadius = UDim.new(0, 10)}, KeyFrame)
+
+        local KeyTitle = New("TextLabel", {
+            Text = options.KeySettings and options.KeySettings.Title or "Key System",
+            Size = UDim2.new(1, 0, 0, 40),
+            Position = UDim2.new(0, 0, 0, 10),
+            BackgroundTransparency = 1,
+            TextColor3 = Color3.fromRGB(240, 240, 240),
+            Font = Enum.Font.GothamBold,
+            TextSize = 18,
+            ZIndex = 201,
+        }, KeyFrame)
+
+        local KeyDesc = New("TextLabel", {
+            Text = options.KeySettings and options.KeySettings.Description or "Please enter your access key",
+            Size = UDim2.new(1, -40, 0, 30),
+            Position = UDim2.new(0, 20, 0, 50),
+            BackgroundTransparency = 1,
+            TextColor3 = Color3.fromRGB(150, 150, 160),
+            Font = Enum.Font.Gotham,
+            TextSize = 13,
+            TextWrapped = true,
+            ZIndex = 201,
+        }, KeyFrame)
+
+        local KeyInputHolder = New("Frame", {
+            Size = UDim2.new(1, -60, 0, 40),
+            Position = UDim2.new(0, 30, 0, 100),
+            BackgroundColor3 = Color3.fromRGB(24, 24, 28),
+            ZIndex = 201,
+        }, KeyFrame)
+        New("UICorner", {CornerRadius = UDim.new(0, 6)}, KeyInputHolder)
+        
+        local KeyInput = New("TextBox", {
+            Size = UDim2.new(1, -20, 1, 0),
+            Position = UDim2.new(0, 10, 0, 0),
+            BackgroundTransparency = 1,
+            PlaceholderText = "Enter Key Here...",
+            Text = "",
+            TextColor3 = Color3.fromRGB(240, 240, 240),
+            Font = Enum.Font.Gotham,
+            TextSize = 14,
+            ClearTextOnFocus = false,
+            ZIndex = 202,
+        }, KeyInputHolder)
+
+        local CheckBtn = New("TextButton", {
+            Size = UDim2.new(0.5, -35, 0, 36),
+            Position = UDim2.new(0, 30, 0, 160),
+            BackgroundColor3 = Color3.fromRGB(30, 215, 96),
+            Text = "Check Key",
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            Font = Enum.Font.GothamBold,
+            TextSize = 14,
+            AutoButtonColor = false,
+            ZIndex = 201,
+        }, KeyFrame)
+        New("UICorner", {CornerRadius = UDim.new(0, 6)}, CheckBtn)
+
+        local GetBtn = New("TextButton", {
+            Size = UDim2.new(0.5, -35, 0, 36),
+            Position = UDim2.new(0.5, 5, 0, 160),
+            BackgroundColor3 = Color3.fromRGB(35, 35, 40),
+            Text = "Get Key",
+            TextColor3 = Color3.fromRGB(200, 200, 200),
+            Font = Enum.Font.GothamBold,
+            TextSize = 14,
+            AutoButtonColor = false,
+            ZIndex = 201,
+        }, KeyFrame)
+        New("UICorner", {CornerRadius = UDim.new(0, 6)}, GetBtn)
+
+        local function CheckValidKey(inputKey)
+            local validKeys = options.KeySettings and options.KeySettings.Key
+            if type(validKeys) == "string" then
+                return inputKey == validKeys
+            elseif type(validKeys) == "table" then
+                for _, k in ipairs(validKeys) do
+                    if inputKey == k then return true end
+                end
+            elseif type(validKeys) == "function" then
+                return validKeys(inputKey)
+            end
+            return false
+        end
+
+        CheckBtn.MouseButton1Click:Connect(function()
+            if CheckValidKey(KeyInput.Text) then
+                Tween(KeyFrame, {BackgroundTransparency = 1}, 0.3)
+                for _, child in ipairs(KeyFrame:GetChildren()) do
+                    if child:IsA("GuiObject") then
+                        Tween(child, {BackgroundTransparency = 1}, 0.3)
+                        if child:IsA("TextLabel") or child:IsA("TextBox") or child:IsA("TextButton") then
+                            Tween(child, {TextTransparency = 1}, 0.3)
+                        end
+                    end
+                end
+                task.delay(0.3, function()
+                    KeyFrame:Destroy()
+                    MainFrame.Visible = true
+                    MainFrame.Size = UDim2.new(0, 600, 0, 420)
+                    Tween(MainFrame, {Size = UDim2.new(0, 620, 0, 440)}, 0.4, Enum.EasingStyle.Back)
+                    self:Notify("Key System", "Valid key! Welcome.", 3, "check-circle")
+                end)
+            else
+                local oldColor = KeyInputHolder.BackgroundColor3
+                Tween(KeyInputHolder, {BackgroundColor3 = Color3.fromRGB(200, 50, 50)}, 0.1)
+                task.delay(0.2, function()
+                    Tween(KeyInputHolder, {BackgroundColor3 = oldColor}, 0.3)
+                end)
+                KeyInput.Text = ""
+            end
+        end)
+
+        GetBtn.MouseButton1Click:Connect(function()
+            local link = options.KeySettings and options.KeySettings.Link
+            if link and setclipboard then
+                setclipboard(link)
+                self:Notify("Key System", "Link copied to clipboard!", 3, "copy")
+            elseif not setclipboard then
+                self:Notify("Key System", "setclipboard not supported!", 3, "alert-circle")
+            end
+        end)
     end
 
     return self
