@@ -410,7 +410,7 @@ function Library.new(options, gameSubTitle)
     -- Header Card
     local HeaderCard = New("Frame", {
         Size = UDim2.new(1, 0, 0, 65),
-        BackgroundColor3 = Color3.fromRGB(20, 20, 22),
+        BackgroundColor3 = "Theme:Card",
         BorderSizePixel = 0,
     }, Sidebar)
     New("UICorner", {CornerRadius = UDim.new(0, 8)}, HeaderCard)
@@ -420,7 +420,7 @@ function Library.new(options, gameSubTitle)
     local LogoBox = New("Frame", {
         Size = UDim2.new(0, 42, 0, 42),
         Position = UDim2.new(0, 12, 0.5, -21),
-        BackgroundColor3 = Color3.fromRGB(10, 10, 12),
+        BackgroundColor3 = "Theme:Element",
     }, HeaderCard)
     New("UICorner", {CornerRadius = UDim.new(0, 8)}, LogoBox)
 
@@ -446,7 +446,7 @@ function Library.new(options, gameSubTitle)
         Text = gameSubTitle or "for Game",
         Size = UDim2.new(1, -65, 0, 18),
         Position = UDim2.new(0, 62, 0, 32),
-        TextColor3 = Color3.fromRGB(120, 120, 130),
+        TextColor3 = "Theme:SubText",
         Font = Enum.Font.BuilderSans,
         TextSize = 11,
         TextXAlignment = Enum.TextXAlignment.Left,
@@ -474,7 +474,7 @@ function Library.new(options, gameSubTitle)
     local FooterCard = New("Frame", {
         Size = UDim2.new(1, 0, 0, 60),
         Position = UDim2.new(0, 0, 1, -60),
-        BackgroundColor3 = Color3.fromRGB(20, 20, 22),
+        BackgroundColor3 = "Theme:Card",
         BorderSizePixel = 0,
     }, Sidebar)
     New("UICorner", {CornerRadius = UDim.new(0, 8)}, FooterCard)
@@ -483,7 +483,7 @@ function Library.new(options, gameSubTitle)
     local AvatarImg = New("ImageLabel", {
         Size = UDim2.new(0, 42, 0, 42),
         Position = UDim2.new(0, 9, 0.5, -21),
-        BackgroundColor3 = Color3.fromRGB(30, 30, 35),
+        BackgroundColor3 = "Theme:Element",
     }, FooterCard)
     New("UICorner", {CornerRadius = UDim.new(1, 0)}, AvatarImg)
 
@@ -503,7 +503,7 @@ function Library.new(options, gameSubTitle)
         Text = realName,
         Size = UDim2.new(1, -60, 0, 20),
         Position = UDim2.new(0, 60, 0.5, -18),
-        TextColor3 = Color3.fromRGB(220, 220, 220),
+        TextColor3 = "Theme:Text",
         Font = Enum.Font.BuilderSansBold,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,

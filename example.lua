@@ -29,7 +29,7 @@ end
 local Window = Library.new({
     Name = "Fernove",
     SubTitle = "Premium",
-    KeySystem = true,
+    KeySystem = false,
     --[[KeySettings = {
         Title = "Fernove Key System",
         Description = "Please enter your access key to continue.",
@@ -207,9 +207,9 @@ end)
 
 -- ====================
 -- Settings Page
-local Page2 = Window:CreatePage("Settings", "settings")
+--local Page2 = Window:CreatePage("Settings", "settings")
 
-local ThemeTab = Page2:CreateSubTab("Themes")
+local ThemeTab = SettingsPage:CreateSubTab("Themes")
 local ThemeCard = ThemeTab:CreateCard("Theme Engine", "palette")
 
 local ThemesList = {"Default", "Ocean", "Dracula", "Midnight"}
