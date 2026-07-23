@@ -923,8 +923,8 @@ function Library:CreatePage(pageName, icon)
         PageFrame.Visible = true
         self.PageTitle.Text = pageName
         PageBtn.BackgroundTransparency = 0
-        PageLabel.TextColor3 = "Theme:Text"
-        if IconImg then IconImg.ImageColor3 = "Theme:Text" end
+        PageLabel.TextColor3 = ThemeManager.CurrentTheme.Text
+        if IconImg then IconImg.ImageColor3 = ThemeManager.CurrentTheme.Text end
     end
 
     Page.Button = PageBtn
@@ -978,7 +978,7 @@ function Library:CreatePage(pageName, icon)
         if #Page.SubTabs == 0 then
             ContentScroll.Visible = true
             SubBtn.BackgroundTransparency = 0
-            SubBtn.TextColor3 = "Theme:Text"
+            SubBtn.TextColor3 = ThemeManager.CurrentTheme.Text
         end
 
         SubTab.Button = SubBtn
@@ -1331,7 +1331,7 @@ function Library:CreatePage(pageName, icon)
                             BackgroundColor3 = "Theme:Element",
                             BackgroundTransparency = optionValue == selected and 0 or 1,
                             Text = tostring(optionValue),
-                            TextColor3 = optionValue == selected and "Theme:Text" or "Theme:SubText",
+                            TextColor3 = optionValue == selected and ThemeManager.CurrentTheme.Text or ThemeManager.CurrentTheme.SubText,
                             Font = Enum.Font.BuilderSans,
                             TextSize = 11,
                             ZIndex = 61,
@@ -1545,7 +1545,7 @@ function Library:CreatePage(pageName, icon)
                             Text = tostring(optionValue),
                             Size = UDim2.new(1, -26, 1, 0),
                             Position = UDim2.new(0, 8, 0, 0),
-                            TextColor3 = isSelected and "Theme:Text" or "Theme:SubText",
+                            TextColor3 = isSelected and ThemeManager.CurrentTheme.Text or ThemeManager.CurrentTheme.SubText,
                             Font = Enum.Font.BuilderSans, TextSize = 11,
                             TextXAlignment = Enum.TextXAlignment.Left,
                             BackgroundTransparency = 1,
@@ -1567,7 +1567,7 @@ function Library:CreatePage(pageName, icon)
                             local nowSelected = selected[optionValue] == true
                             Tween(OptBtn, {BackgroundTransparency = nowSelected and 0 or 1}, 0.1)
                             Tween(CheckIcon, {ImageTransparency = nowSelected and 0 or 1}, 0.1)
-                            Label.TextColor3 = nowSelected and "Theme:Text" or "Theme:SubText"
+                            Label.TextColor3 = nowSelected and ThemeManager.CurrentTheme.Text or ThemeManager.CurrentTheme.SubText
                             SelectedLbl.Text = GetLabelText()
                             local out = {}
                             for k, v in pairs(selected) do
