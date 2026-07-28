@@ -72,6 +72,10 @@ local FetchIcons, Icons = pcall(function()
     ))()
 end)
 
+if type(Icons) ~= "table" then
+    Icons = {}
+end
+
 local function GetLucideIcon(IconName)
     if not FetchIcons then return nil end
     local Success, Icon = pcall(Icons.GetAsset, IconName)
