@@ -753,6 +753,10 @@ function Library.new(options, gameSubTitle)
         end)
     end
 
+    self.Destroy = function()
+        ScreenGui:Destroy()
+    end
+
     return self
 end
 
